@@ -72,6 +72,7 @@ asset-drop/
 - 站点：**https://ariefenv-hash.github.io/asset-drop/** · 数据源 `gh-pages / root` · legacy 模式
 - **第 26 轮 gh-pages 更新**：由 `NEXT_EXPORT=1 NEXT_BASE_PATH=/asset-drop` 从源码官方静态导出全量替换（2,556 文件 + `.nojekyll`），与 `archives/aosp-ripple-port-web-dist.zip` 同源；含第 22-26 轮全部修复（全站栅格化口径统一/开关状态层居中根修/第 25 轮导航锚定与四风格可点击/第 24 轮自审加固）
 - **线上复测（2026-11-22，已推送 51be518 / 40c7151）**：首页 200 · `official-md-ripple/index.html` 200 · 页脚 ZIP 200 · GoogleSansFlex 字体 200；线上 HTML 核验为第 24 轮构建（iframe/zip 均带 `/asset-drop` 前缀）；对照页 md-switch 升级断言在沙盒无头浏览器中卡于 interactive，经三重判别（curl 全 200 / Python 12 线程并发拉全模块图 8.5s 全 200 / 同构建本地子路径模拟 5/5 升级）定论为沙盒浏览器到 github.io 的 TLS 连接不稳（同轮 git push 亦先报 GnuTLS -110 后 HTTP/1.1 重试成功），非部署缺陷
+- **线上复测（2026-11-22，已推送 7ccc99b / eb4efff，第 27 轮）**：Pages status=built（legacy · gh-pages / root）；`/` 200 · `/official-md-ripple/index.html` 200；线上 index.html 的 8 个 _next chunk/css 路径集合与本地第 27 轮构建完全一致（部署即本轮产物），**线上已无 geist 任何残留**（next-font 摘除生效实证）；iframe/页脚 zip 引用均带 `/asset-drop` 前缀；归档双 zip 经 GitHub API raw 通道实测哈希——src 7,453,298 B sha256 `415d9c02…c449e` ✓ · dist 11,594,468 B sha256 `faae48c5…5b05` ✓（github.io 大文件直连沿用既定 TLS 不稳口径，API 通道互证）；令牌善后：一次性 URL 注入，临时克隆已删除，无 credential.helper 残留，令牌未写入任何项目文件
 - 第 22-23 轮修复版曾因令牌失效滞留本地（第 18 轮令牌已按约定用后撤销），本轮新令牌到位后 main + gh-pages 一次性推送
 - 第 18 轮 gh-pages 为「standalone 产物静态化拼接」，存在预渲染 HTML 与客户端不一致导致的 React #418 hydration 警告与部分交互不完整；第 21 轮改为**官方 `output:"export"` 源码级导出**，预渲染即构建期产出、组件树与客户端 bundle 同源，该已知局限按导出机制预期消除（线上复测以 Pages 发布后无头访问为准）
 - 资源路径 `/asset-drop/_next/...`（构建期注入，非拼接）；`.nojekyll` 保住 `_next/` 目录
