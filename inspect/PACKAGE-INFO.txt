@@ -1,34 +1,43 @@
 AOSP 涟漪移植展示 · 打包说明
 ================================================
-构建时间：2026-11-22 00:43（第 18 轮）
+构建时间：2026-11-22（第 21 轮）
 基线：AOSP Android 17 (android-17.0.0_r1) · material-web 2.5.0 · MDC-Android 1.14.0
 
 一、本包内容
 ------------------------------------------------
 1) aosp-ripple-port-web-src.zip —— Next.js 预览工程源码
-   - src/             全部移植组件（20+ 组件文件 + 9 个 aosp 引擎文件）
+   - src/             全部移植组件（22 个组件文件 + 9 个 aosp 引擎文件）
    - public/          官方对照 iframe、字体、内嵌源码包
+   - evidence/        MDC-Android 1.14.0 取证转储（material.aar + 12 份 tokens.xml
+                      + resolved-structural.txt 162 项引用链解析）
    - 根配置            package.json / next.config.ts / tsconfig / tailwind 等
 
-2) aosp-ripple-port-web-dist.zip —— 生产构建产物（standalone）
-   - standalone/      bun run build 产物，NODE_ENV=production bun server.js 即起
+2) aosp-ripple-port-web-dist.zip —— GitHub Pages 静态导出产物
+   - out/             NEXT_EXPORT=1 NEXT_BASE_PATH=/asset-drop 官方静态导出
+                      （纯静态 HTML/JS/CSS + .nojekyll，解压即站点）
 
-二、第 18 轮变更（对齐官方 24 类清单）
+二、第 21 轮变更（官方展示站点重抓核验）
 ------------------------------------------------
-- 修复：横向拉伸 Overscroll 右缘锚点（内容层显式 948px，四向锚点齐全，
-  右缘越界 pinned 实测通过）；移动端 flex-col fit-content 溢出修复（scrollW 390）
-- 补齐 12 类 M3 组件：Badges / Checkbox / Radio / Chips / Snackbar / Tabs /
-  Cards / Dialogs / Divider / Menus / Tooltips / Text fields
-  （全部 token 接线自 MDC-Android 1.14.0 官方 AAR + tokens.xml，通道矩阵见
-  src/components/ripple/M3CoreComponentsGallery.tsx 头注释）
-- 取证通道矩阵：raw.github / api.github / WebFetch / dl.google.com 官方 AAR /
-  googlesource（阻断），radio+textfield token 与 checkbox 矢量几何等仅官方 AAR 提供
-- 诚实缺口清单：App bars / Navigation / Sheets / Search / Carousel /
-  Date & time pickers（6 类重组件暂缓，见页内表格）
-- 产物标记自检：data-stretch-local / stretchScaleFor / GOOGLE_BLUE /
-  M3 官方清单缺口补齐 / m3_comp_radio_button 等全部命中
+- 官方清单重抓：m3.material.io/components 六大类 36 项（修正第 18 轮 35 项
+  口径），36/36 一一比对全覆盖
+- 补齐 Icon buttons（36 项中唯一无独立实现项）：m3_comp_icon_button_* 40 项
+  几何 dimen + 2 份颜色选择器逐行核实（5 尺寸档 32/40/56/96/136dp）
+- 第 20 条：Google Sans Flex + 中文可变字体（文渊圆/宋 SC VF、思源宋）全局
+  字体混排（globals.css 全局栈 + layout.tsx zeoseven CDN + 实验室调参）
+- 第 19 条定论：radio = radiobutton/res/values/tokens.xml（22 token）、
+  textfield = textfield/res/values/tokens_textfield.xml（31 token），
+  codeload tarball 通道 F 提取，与 AAR 通道 D 完全吻合（取证矩阵 A..G）
+- 代码质量：m3GalleryShared.tsx 共享壳层去重；tsc --noEmit src/ 零错误；
+  next.config.ts 支持 NEXT_EXPORT / NEXT_BASE_PATH 构建开关
+- 自测：双模式 build 通过 · SSR 10/10 · 桌面 1280×900 + iPhone 14 截图核验
 
-三、运行
+三、取值标注约定
 ------------------------------------------------
-  bun install && bun run dev   # http://localhost:3000
-  bun run build && bun run start
+✓ = MDC-Android 1.14.0 AAR / tokens.xml 逐行核实
+◇ = tokens 未覆盖该项，取 M3 规范默认或主题映射（如实标注，不冒充源码值）
+
+四、构建复现
+------------------------------------------------
+bun install
+bun run build                      # standalone 形态（预览容器）
+NEXT_EXPORT=1 NEXT_BASE_PATH=/asset-drop bunx next build   # Pages 静态导出
