@@ -1,6 +1,6 @@
 AOSP 涟漪移植展示 · 打包说明
 ================================================
-构建时间：2026-11-22 04:54（第 25 轮）
+构建时间：2026-11-22 05:12（第 26 轮）
 基线：AOSP Android 17 (android-17.0.0_r1) · @material/web 2.5.0（pkg/ 原文内联运行）· MDC-Android 1.14.0
 · Monet CoreSpec = packages/SystemUI/monet ColorScheme.kt（aosp-mirror android-13.0.0_r1）
 
@@ -15,29 +15,23 @@ AOSP 涟漪移植展示 · 打包说明
    NEXT_EXPORT=1 NEXT_BASE_PATH=/asset-drop 生成（out/），解压即站点；
    纯静态、无 node_modules，与 gh-pages 分支同源。
 
-二、第 25 轮变更（用户复核两弹驱动）
+二、第 26 轮变更（用户复核第 4 弹：全项目降采样排查 + 开关状态层偏移）
 ------------------------------------------------
-- "剪切"按钮 content_cut 矢量图标路径还原为 Material Icons 原版
-  （此前路径为损坏手写版：弧线端点/圆孔半径全错，渲染畸形；同组复制/粘贴本为原版）
-- 7 种几何形变加载指示器画布清晰度修复：撤销 2.5 DPR 上采样顶，
-  改按真实 devicePixelRatio × visualViewport 捏合缩放逐帧重设后备缓冲（封顶 8 防病态值）；
-  硬边贝塞尔剪影在浏览器缩放/捏合下不再比周围 SVG/文本发虚；
-  大面积软边 WebGL 涟漪画布维持 2.5 封顶（差异不可见，既定性能口径）
-- 导航抽屉（standard + modal）纵向滚动锁定：滚动容器补 overflow-x hidden +
-  touchAction pan-y + overscrollBehavior contain；条目按钮去掉 w-full
-  （100% 宽 + marginInline 12 曾撑出 12px 横向溢出——"能左右滑"真根因）
-- 底部导航/侧边导航轨/导航抽屉：激活胶囊（56×32）、hover 层与角标改锚定到
-  精确 24×24 图标盒（内联 svg 基线排版上浮 + "图标+文字"整组居中曾使胶囊/角标错位）；
-  侧边导航轨补角标演示（首页 99+，折叠/展开两形制同锚定）
-- ThemeVariant 由 tonal_spot|expressive 扩展为 styleList 全集（+spritz/vibrant），
-  buildM3Theme 调色板 CoreSpec 逐值取自 AOSP-13 ColorScheme.kt L136-186
-  （Spritz 12/8/16 中性 2/2 · Vibrant MaxOut(130)/旋转表 24/32 中性 10/12，联网逐字核对）
-- 配色方案圆形预览 8 颗全部可点击：点击 = 应用该风格 + 该行明暗模式
-  （行 = 浅/深 preview，列 = TONAL_SPOT/SPRITZ/VIBRANT/EXPRESSIVE；
-  选中外圈 = themeVariant × isDark 联合判定）；实验区变体选择器同步扩为 4 项
-- 四象限圆形预览加同色 0.75 描边消除扇形共享边抗锯齿发丝缝
-- 端到端：tsc 零错误 · 浏览器实测（胶囊对中/角标贴角/抽屉 scrollWidth==clientWidth/
-  强制 scrollLeft=0/预览点击切风格+明暗/实验区选择器联动/形变画布 48×dpr 重设）
+- 全项目降采样排查收官：新增共享口径 effectiveRasterDpr(cap) =
+  devicePixelRatio × visualViewport.scale（捏合缩放），封顶防病态值；
+  · 小画布全部给足真实分辨率（cap 8）：开关状态层 40dp · 涟漪面 24-96dp ·
+    形变指示器 48dp（第 25 轮已修，本轮收敛到同一助手）
+  · 大面积 WebGL 实验区舞台 cap 2.5 → 4（软边涟漪下收益递减，限幅保帧率，
+    数学叠层半径换算同步）
+- 开关状态层圆形"偏下 + 松手跳一下"根修：绝对定位包含块为 padding box，
+  unchecked 态 border-2 把固定 top 值整体压低 2px（实测圆心 18 vs 小球 16），
+  checked 翻转瞬间跳变 2px；top 改 calc(50% - 20px) 后两种状态、翻转前后
+  圆心恒与 border-box 中心重合（浏览器逐帧采样实测翻转全程 cy=16 无跳变）
+- 顺带审计：RippleSurface/Switch 空闲画布停在默认 300×150 属正常
+  （tick 首帧先重设后绘制，空闲透明不可见）；共享 WebGL 渲染器画布按
+  调用方 dpr 逐次重设，无隐藏瓶颈
+- 端到端：tsc 零错误 · unchecked/checked delta 均为 0 · 双向翻转逐帧采样无跳变 ·
+  实验区触发生成无报错 · 三 zip 同源同哈希
 
 三、运行
 ------------------------------------------------

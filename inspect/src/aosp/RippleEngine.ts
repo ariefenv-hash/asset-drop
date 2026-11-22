@@ -636,3 +636,19 @@ export function getSharedRippleRenderer(): WebGL2RippleRenderer {
   }
   return sharedOffscreenRenderer;
 }
+
+/**
+ * 第 26 轮（用户复核）：全项目栅格化清晰度统一口径。
+ * 浏览器页面缩放已含在 devicePixelRatio 内，移动端捏合缩放走 visualViewport.scale；
+ * 两者任一超出后备缓冲的预设上限都会把内容上采样拉糊（硬边剪影/圆环尤其明显）。
+ * 小画布（状态层 40dp、涟漪面 24-96dp、形变指示器 48dp）逐帧重设缓冲代价可忽略，
+ * 直接给足真实分辨率；大面积 WebGL 舞台由调用方传更低 cap 自行限幅（性能口径，
+ * 软边涟漪下差异不可见）。cap 仅防病态取值（如 500% 缩放的 4K 屏）。
+ */
+export function effectiveRasterDpr(cap: number): number {
+  const vv =
+    typeof window !== 'undefined' && window.visualViewport
+      ? window.visualViewport.scale
+      : 1;
+  return Math.min((window.devicePixelRatio || 1) * (vv || 1), cap);
+}

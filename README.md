@@ -2,9 +2,9 @@
 
 独立新仓库，与 `ariefenv-hash/md3` 完全隔离；md3 本侧已停工，不再改动任何文件与分支。
 
-## 已归档（第 25 轮 · 2026-11-22 滚动更新）
+## 已归档（第 26 轮 · 2026-11-22 滚动更新）
 
-- `archives/aosp-ripple-port-web-src.zip` — AOSP 涟漪移植展示 **第 25 轮** Next.js 工程源码
+- `archives/aosp-ripple-port-web-src.zip` — AOSP 涟漪移植展示 **第 26 轮** Next.js 工程源码
 - `archives/aosp-ripple-port-web-dist.zip` — 对应 **GitHub Pages 静态导出产物**（`NEXT_EXPORT=1 NEXT_BASE_PATH=/asset-drop`，资源路径含 `/asset-drop` 前缀，解压即站点）
 
 完整清单、sha256、dist 形态变化说明与评估报告对照见 **MANIFEST.md**。
@@ -16,6 +16,13 @@
 - 需要展开时：`unzip archives/xxx.zip -d build/`（或 `source/`）
 - 本仓做滚动更新与如实记录；归档均附 `zipfile.testzip()` 完整性校验
 - **第 25 轮起打包脚本支持分阶段执行（src → 重建 out → dist）**，保证 Pages 页脚内嵌 ZIP 与归档 src zip 同源同哈希（此前 dist 先于 public 同步构建，页脚包落后一轮）
+
+## 第 26 轮要点（用户复核第 4 弹：全项目降采样排查 + 开关状态层偏移）
+
+- **全项目降采样排查收官**：新增共享口径 `effectiveRasterDpr(cap) = devicePixelRatio × visualViewport.scale`（捏合缩放计入，封顶防病态值）；小画布（开关状态层 40dp · 涟漪面 24-96dp · 形变指示器 48dp）全部给足真实分辨率（cap 8）；大面积 WebGL 实验区舞台 cap 2.5→4（软边涟漪下收益递减，限幅保帧率，数学叠层半径换算同步）
+- **开关状态层"偏下 + 松手跳一下"根修**：绝对定位包含块为 padding box，unchecked 态 border-2 把固定 top 值整体压低 2px（实测圆心 18 vs 小球 16），checked 翻转瞬间跳变 2px；`top: calc(50% - 20px)` 后两种状态、翻转前后圆心恒与 border-box 中心重合（浏览器逐帧采样实测双向翻转全程 cy=16 无跳变）
+- **顺带审计**：RippleSurface/Switch 空闲画布停在默认 300×150 属正常（tick 首帧先重设后绘制，空闲透明不可见）；共享 WebGL 渲染器画布按调用方 dpr 逐次重设，无隐藏瓶颈
+- 端到端实测：tsc 零错误 · unchecked/checked delta 均为 0 · 双向翻转逐帧采样无跳变 · 实验区触发无报错 · 三 zip 同源同哈希
 
 ## 第 25 轮要点（用户复核两弹驱动）
 
@@ -40,4 +47,4 @@
 ## 线上预览
 
 **https://ariefenv-hash.github.io/asset-drop/** （gh-pages 分支）
-- 第 25 轮（含第 22-24 轮全部修复）已随本次推送同步上线：导航三件套锚定、抽屉纵向锁定、形变画布清晰度、配色预览四风格可点击应用均可在线验证
+- 第 26 轮（含第 22-25 轮全部修复）已随本次推送同步上线：全站栅格化口径统一（缩放/捏合不发虚）、开关状态层恒居中，均可在线验证
