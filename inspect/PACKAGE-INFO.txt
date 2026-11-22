@@ -1,37 +1,43 @@
 AOSP 涟漪移植展示 · 打包说明
 ================================================
-构建时间：2026-11-22 05:12（第 26 轮）
+构建时间：2026-11-22（第 28 轮）
 基线：AOSP Android 17 (android-17.0.0_r1) · @material/web 2.5.0（pkg/ 原文内联运行）· MDC-Android 1.14.0
 · Monet CoreSpec = packages/SystemUI/monet ColorScheme.kt（aosp-mirror android-13.0.0_r1）
 
 一、本包内容
 ------------------------------------------------
 1) aosp-ripple-port-web-src.zip —— Next.js 预览工程源码（可复现构建）
-   - src/        9 个 aosp 引擎文件 + 22 个组件文件 + 官方对照 iframe
+   - src/        9 个 aosp 引擎文件 + 15 个组件文件（含自研图标模块 icons/）
+                 + 官方对照 iframe
    - public/     official-md-ripple（pkg/ 原文 + vendor/ lit 3.3.2）、字体、页脚内嵌源码包
    - evidence/   MDC-Android 1.14.0 官方 AAR + tokens 取证转储
-   - 根配置      package.json / next.config.ts / tsconfig / tailwind / bun.lock / .gitignore
+   - 根配置      package.json / next.config.ts / tsconfig / postcss / eslint / bun.lock / .gitignore
 2) aosp-ripple-port-web-dist.zip —— GitHub Pages 静态导出产物
    NEXT_EXPORT=1 NEXT_BASE_PATH=/asset-drop 生成（out/），解压即站点；
    纯静态、无 node_modules，与 gh-pages 分支同源。
 
-二、第 26 轮变更（用户复核第 4 弹：全项目降采样排查 + 开关状态层偏移）
+二、第 28 轮变更（开关小球勾叉修复 + 页尾还原边界说明）
 ------------------------------------------------
-- 全项目降采样排查收官：新增共享口径 effectiveRasterDpr(cap) =
-  devicePixelRatio × visualViewport.scale（捏合缩放），封顶防病态值；
-  · 小画布全部给足真实分辨率（cap 8）：开关状态层 40dp · 涟漪面 24-96dp ·
-    形变指示器 48dp（第 25 轮已修，本轮收敛到同一助手）
-  · 大面积 WebGL 实验区舞台 cap 2.5 → 4（软边涟漪下收益递减，限幅保帧率，
-    数学叠层半径换算同步）
-- 开关状态层圆形"偏下 + 松手跳一下"根修：绝对定位包含块为 padding box，
-  unchecked 态 border-2 把固定 top 值整体压低 2px（实测圆心 18 vs 小球 16），
-  checked 翻转瞬间跳变 2px；top 改 calc(50% - 20px) 后两种状态、翻转前后
-  圆心恒与 border-box 中心重合（浏览器逐帧采样实测翻转全程 cy=16 无跳变）
-- 顺带审计：RippleSurface/Switch 空闲画布停在默认 300×150 属正常
-  （tick 首帧先重设后绘制，空闲透明不可见）；共享 WebGL 渲染器画布按
-  调用方 dpr 逐次重设，无隐藏瓶颈
-- 端到端：tsc 零错误 · unchecked/checked delta 均为 0 · 双向翻转逐帧采样无跳变 ·
-  实验区触发生成无报错 · 三 zip 同源同哈希
+- 图标渲染器尺寸语义修复（用户复核"开关小球勾叉比原系统大一圈"实根因）：
+  icons/index.tsx 的 size 原先经 inline style（width/height: 24px 默认值）
+  写入，内联样式优先级高于 Tailwind 尺寸类——第 27 轮换装后全站 6 处靠
+  类名定尺寸的图标（开关小球勾叉 h-4、页头明暗切换与源码对照复制/成功
+  h-3.5、暗色演示 Sun h-5）实际全被撑成 24px。现改 width/height 属性写入
+  （lucide 同款语义）：类名/样式可正常覆盖，无类名时仍为默认 24dp
+- 字形档位真机取证（960 网格逐字计算 + Android 16 Expressive 系统设置
+  截图逐像素实测）：X 宽/小球直径 = 0.355~0.387 ↔ 官方默认 close 字形
+  @16dp 图标盒 = 8.77/24 = 0.365 吻合；check_small/close_small 小号变体
+  （6.13/24 = 0.256）明显小于实机——小球维持官方默认 check/close 字形，
+  图标盒保持官方 spec 16dp（m3.material.io switch specs：icon size 16dp
+  选中/未选中同值）；lucide 时代遗留 stroke-[2.75/2.5] 笔画类清除
+  （对实心剪影本就无效）
+- icons 模块补录 check_small/close_small（google/material-design-icons
+  symbols/web/<name>/materialsymbolsrounded/<name>_fill1_24px.svg 原样内联，
+  60→62 枚）作为官方小号光学变体备用，取证结论如实记录于模块头注
+- 页尾「关于本项目 · 项目性质说明」三栏扩四栏：新增「还原边界 · 使用须知」
+  （用户要求）——本仓库仅展示从系统源码中可找到、可考据的部分进行还原，
+  实现可能有所取舍，部分细节未能与主代码一一对应（移植到网页不可避免）；
+  使用时请注意这些组件只是基础，后续动画还需进一步补充完善
 
 三、运行
 ------------------------------------------------

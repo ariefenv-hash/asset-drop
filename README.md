@@ -2,16 +2,47 @@
 
 独立新仓库，与 `ariefenv-hash/md3` 完全隔离；md3 本侧已停工，不再改动任何文件与分支。
 
-## 已归档（第 27 轮 · 2026-11-22 滚动更新）
+## 已归档（第 28 轮 · 2026-11-22 滚动更新）
 
-- `archives/aosp-ripple-port-web-src.zip` — AOSP 涟漪移植展示 **第 27 轮** Next.js 工程源码
+- `archives/aosp-ripple-port-web-src.zip` — AOSP 涟漪移植展示 **第 28 轮** Next.js 工程源码
 - `archives/aosp-ripple-port-web-dist.zip` — 对应 **GitHub Pages 静态导出产物**（`NEXT_EXPORT=1 NEXT_BASE_PATH=/asset-drop`，资源路径含 `/asset-drop` 前缀，解压即站点）
 
 完整清单、sha256、dist 形态变化说明与评估报告对照见 **MANIFEST.md**。
 
+## 还原边界 · 使用须知（第 28 轮 · 用户要求特此说明）
+
+> 本仓库**仅展示从系统源码中可找到、可考据的部分**进行还原：实现可能有所取舍，
+> 部分细节未能做到与主代码一一对应——这实际上是把组件移植到网页时不可避免的
+> 差异。使用本仓库内容时请注意：这些组件**只是基础**，后续动画还需要进一步
+> 补充完善，特此说明。
+
+（站内同款声明见页尾「关于本项目 · 还原边界 · 使用须知」栏。）
+
+## 第 28 轮要点（开关小球勾叉修复 + 页尾还原边界说明）
+
+- **图标渲染器尺寸语义修复（"小球勾叉大一圈"实根因）**：icons/index.tsx 的
+  size 原先经 inline style（默认 24px）写入，内联样式压过 Tailwind 尺寸类——
+  第 27 轮换装后全站 6 处类名定尺寸图标（开关小球勾叉 h-4、页头明暗切换与
+  源码对照复制/成功 h-3.5、暗色演示 Sun h-5）实际全被撑成 24px；改
+  width/height 属性写入（lucide 同款语义），类名可覆盖，无类名时仍默认 24dp
+- **字形档位真机取证**：Android 16 Expressive 系统设置截图（Audio sharing 页
+  两处开关）逐像素实测 X 宽/小球直径 = 0.355~0.387 ↔ 官方默认 close 字形
+  @16dp 图标盒 = 8.77/24 = 0.365 吻合；check_small/close_small 小号变体
+  （0.256）明显小于实机——小球维持官方默认 check/close 字形，图标盒保持
+  官方 spec 16dp（m3.material.io switch specs：icon size 16dp 选中/未选中同值）；
+  lucide 时代遗留 stroke-[2.75/2.5] 笔画类清除（对实心剪影本就无效）
+- **icons 模块补录**：check_small/close_small 官方小号变体原样内联（60→62 枚）
+  备用，取证结论记录于模块头注
+- **页尾「关于本项目」三栏扩四栏**：新增「还原边界 · 使用须知」（用户要求，
+  文案见上方声明章节）
+- 端到端实测：tsc 零错误 · NEXT_EXPORT 静态导出通过 · 断言——开关小球 svg
+  实测盒宽 16px（0 处 24px 残留）、字形 d 与官方默认 check/close 逐位一致 ·
+  全站类名定尺寸 svg 实宽与类一致（h-3.5→14 / h-4→16 / h-5→20）· 页尾四栏 ·
+  控制台零错误 · 三 zip 同源同哈希
+
 ## 说明
 
-- `dist` 解压后 21.5 MB / 2,542 文件（纯静态导出，**无 node_modules**，与 gh-pages 分支同源）
+- `dist` 解压后约 21.5 MB / 2,542 文件（纯静态导出，**无 node_modules**，与 gh-pages 分支同源）
 - 第 18 轮 dist 为 standalone 形态（93 MB 含 node_modules），自第 21 轮起由静态导出取代；standalone 可由 src 包 `bun run build` 复现
 - 需要展开时：`unzip archives/xxx.zip -d build/`（或 `source/`）
 - 本仓做滚动更新与如实记录；归档均附 `zipfile.testzip()` 完整性校验
