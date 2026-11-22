@@ -2,42 +2,40 @@
 
 > 本仓为**资源中转仓**，与 `ariefenv-hash/md3` 完全隔离。md3 本侧已停工。
 > 归档内容**原样保留、未做任何修改**。
-> **第 24 轮（2026-11-22）归档滚动更新**：在承接第 22-23 轮（404 根因修复 + switch 约束状态层/拖拽/吸附 + 页尾说明 + 底色残留根修 + 字体双保险）基础上，完成全面自审加固（派生 click 吞掉 窗口残留 / 拖拽 rAF 覆盖吸附落位 / pointercancel 语义 / 键盘 repeat / prefers-reduced-motion / WebGL 不可用兜底 / 仓库卫生），取代第 23 轮归档（第 18/21/23 轮历史数据见本文件后半与 git 历史）。
+> **第 25 轮（2026-11-22）归档滚动更新**：在承接第 22-24 轮（404 根因修复 + switch 约束状态层/拖拽/吸附 + 页尾说明 + 第 24 轮全面自审加固）基础上，完成用户复核两弹（剪切图标还原 / 形变画布清晰度 / 抽屉纵向锁定 / 胶囊与角标锚定 / 配色预览四风格可点击应用），取代第 24 轮归档（第 18/21/23/24 轮历史数据见本文件后半与 git 历史）。
 
-## 一、两份原始归档（第 24 轮）
+## 一、两份原始归档（第 25 轮）
 
 | 文件 | 大小 | sha256 |
 |---|---|---|
-| `archives/aosp-ripple-port-web-src.zip` | 7,548,088 B | `03d5accef6468bd60c2f3612e5fb24da73d014e24bab49b62e76509bcf7cfbcc` |
-| `archives/aosp-ripple-port-web-dist.zip` | 11,851,401 B | `70d29792ea818ac4eb8736d05f45cc5da83a652f185885cfc0ea26e51c443e36` |
+| `archives/aosp-ripple-port-web-src.zip` | 7,553,210 B | `c2718743f3830f715554a25ae37359738d689d0f641e1f48b80fb30ef865619b` |
+| `archives/aosp-ripple-port-web-dist.zip` | 11,859,291 B | `2a6a2c32f6d92ab3a225b607b73d9a454c04b8f7de031f6f9f6410e0e30bdbf9` |
 
-两份均通过 `zipfile.testzip()` 完整性校验（无损坏条目）。
+两份均通过 `zipfile.testzip()` 完整性校验（无损坏条目）；**三包同源同哈希**：dist 内嵌页脚 ZIP（`aosp-ripple-port-src.zip`）= 归档 src zip（本轮新增校验，此前 dist 先于 public 同步构建，页脚包落后一轮）。
 
 ## 二、内容概览（来自 PACKAGE-INFO.txt）
 
-- **构建时间**：2026-11-22（**第 24 轮**）
-- **基线**：AOSP Android 17 `android-17.0.0_r1` · `@material/web 2.5.0`（pkg/ 原文内联运行）· MDC-Android 1.14.0
+- **构建时间**：2026-11-22（**第 25 轮**）
+- **基线**：AOSP Android 17 `android-17.0.0_r1` · `@material/web 2.5.0`（pkg/ 原文内联运行）· MDC-Android 1.14.0 · Monet CoreSpec = `packages/SystemUI/monet/ColorScheme.kt`（aosp-mirror android-13.0.0_r1）
 - **src**：Next.js 预览工程源码（9 个 aosp 引擎文件 + 22 个组件文件 + 官方对照 iframe（pkg/ 原文 + vendor/ lit 3.3.2）+ evidence/ 取证转储）
 - **dist**：**`NEXT_EXPORT=1 NEXT_BASE_PATH=/asset-drop` 静态导出产物（GitHub Pages 直托形态）**，资源根路径已注入 `/asset-drop` 前缀
-- **第 24 轮变更（全面自审驱动）**：
-  - **派生 click 吞掉 标志残留修复**：pointercancel / lostpointercapture 结束拖拽时浏览器不派发 click，旧布尔标志残留会 吞掉 掉下一次正常点击（开关"点不动一次"）；改为 `CLICK_SUPPRESS_WINDOW_MS=600` 时间窗 + pointerdown 重置（实测 cancel 后紧接 click 正常切换）
-  - **拖拽 rAF 覆盖吸附落位修复**：pointerup/cancel 后残留的 applyDragPosition rAF 会在下一帧把小球拉回中途位置（快速拖拽+松手"卡在中途"实错根因）；释放/取消统一取消未决 rAF + pressedRef 守卫
-  - **pointercancel 语义修正**：由"当作松手做吸附判定"改为"手势中止"——回弹按压前状态、不派发 onChange、不设 click 抑制窗口（与原生开关语义一致）
-  - **键盘加固**：key repeat 不再重复生成 涟漪 session；键盘 涟漪 生长点从轨道中心改为小球实际中心（状态层盒中心，与官方"涟漪 生长于贴着小球的状态层"语义一致）；释放定时器收进卸载清理
-  - **prefers-reduced-motion**：撤位移/过冲动画与按压微放大，仅保留 67ms 颜色过渡（M3 无障碍基线）
-  - **WebGL2 不可用兜底**：官方 pressed-state-layer-opacity 0.12 的 CSS 状态层补位，几何与 WebGL 路径一致（40×40 圆、贴小球），消除"按下零反馈"降级死区
-  - **移动端长按体验**：屏蔽 contextmenu / 文本选择 / iOS 长按呼出气泡
-  - **仓库卫生**：.next 缓存/out/tmp/日志共 5,366 个产物文件移出 git 跟踪；.gitignore 系统化（.env* / .DS_Store / tool-results 等）
-  - **打包修正**：src zip 不再自引用内嵌的 `public/aosp-ripple-port-src.zip`（此前逐轮滚雪球，14.4MB → 修正后 7.5MB）
-- **端到端自测（本轮实测）**：`tsc --noEmit` 零错误 · Pages 子路径本地模拟（首页/对照页/zip/字体全 200）· 浏览器断言：点击切换 ✓ · 双向拖拽吸附 ✓ · 欠中点回弹 ✓ · 快速甩动落位 ✓ · pointercancel 中止回弹且不吞后续点击 ✓ · Enter/Space 切换 ✓ · iframe 内 md-switch 5/5 升级 ✓ · 深色模式与页尾三栏说明渲染 ✓
-- **第 22-23 轮变更（承接，详见 git 历史）**：对照页 404 根因修复（basePath 构建期内联，iframe/zip/字体全感知）· vendor/ 内联 lit 3.3.2 运行时 · switch 按压 涟漪 源码实证（switch.js L116 + _handle.scss L134-140 —— 40×40 state-layer-size 圆形状态层、随小球移动、pressed 透明度 0.12，永不扩散过整条轨道）· 涟漪 滥用修正（无界光晕 → 官方同几何约束状态层，星斑着色器 + maskRadii）· 按压 24→28dp + 1.05 微放大、左右拖拽、松手自动吸附判定 · 页尾「关于本项目」三栏说明 · 涟漪 演示底色残留根修 · 字体混排双保险
+- **第 25 轮变更（用户复核两弹驱动）**：
+  - **"剪切" content_cut 矢量图标路径还原**：此前为损坏手写路径（弧线端点/圆孔半径全错，渲染畸形）；还原为 Material Icons 原版（与同组复制/粘贴同风格 filled 集）；同轮完成全部内联矢量图标审计（content_copy/paste、autorenew、checkbox/radio AAR 矢量、四象限预览圆、波浪生成路径均逐项核实无误）
+  - **7 种几何形变加载指示器画布清晰度修复**：撤销 2.5 DPR 上采样顶 → 真实 `devicePixelRatio × visualViewport` 捏合缩放逐帧重设后备缓冲（封顶 8）；硬边贝塞尔剪影在浏览器缩放/捏合下不再发虚；大面积软边 WebGL 涟漪画布（实验区/RippleSurface/开关状态层）维持 2.5 封顶并注明口径
+  - **导航抽屉纵向滚动锁定**：滚动容器补 `overflow-x hidden` + `touchAction: pan-y` + `overscrollBehavior: contain`（standard + modal）；条目按钮去 `w-full`（100% 宽 + marginInline 12 撑出 12px 横向溢出 = "能左右滑"真根因）；实测 scrollWidth==clientWidth==360、强制 scrollLeft 恒 0
+  - **胶囊与角标锚定修复**：底部导航/侧边轨/抽屉的激活胶囊（56×32）、hover 层与角标改锚定精确 24×24 图标盒——内联 svg 基线排版上浮 + "图标+文字"整组居中曾使胶囊对不准图标、角标贴不上顶角（"下方的字把位置挤上去"实错）；侧边轨补角标演示
+  - **ThemeVariant 扩展 styleList 全集**（+spritz/vibrant）：`buildM3Theme` 调色板 CoreSpec 逐值取自 AOSP-13 ColorScheme.kt L136-186（联网逐字核对：SPRITZ 12/8/16 中性 2/2 · VIBRANT MaxOut(130)/VibrantSecondary/Tertiary 旋转表 24/32 中性 10/12）；tonal_spot 中性色源码 n1=4.0 与本仓基线 6.0 存在历史口径差，本轮如实标注、维持基线不动
+  - **配色方案圆形预览 8 颗全部可点击应用**：点击 = 应用该风格 + 该行明暗模式（行 = 浅/深 preview、列 = 四风格，WallpaperPicker2 语义）；选中外圈 = themeVariant × isDark 联合判定；四象限加同色 0.75 描边消除扇形共享边抗锯齿发丝缝
+  - **打包时序修正**：打包脚本支持分阶段执行（src → 重建 out → dist），保证 Pages 页脚内嵌 ZIP 与归档 src zip 同源同哈希
+- **端到端自测（本轮实测）**：`tsc --noEmit` 零错误 · 浏览器断言：胶囊对中/角标贴角 ✓ · 抽屉横滑禁用 ✓ · modal 抽屉 scrim+滑入 ✓ · 预览点击切风格+明暗+实验区选择器联动 ✓ · 形变画布 48×dpr 重设 ✓ · 三包同源同哈希 ✓
+- **第 22-24 轮变更（承接，详见 git 历史）**：对照页 404 根因修复（basePath 构建期内联）· vendor/ 内联 lit 3.3.2 · switch 按压涟漪源码实证（40×40 state-layer）· 涟漪滥用修正 · 按压微放大/拖拽/吸附 · 页尾三栏说明 · 第 24 轮自审加固（click 抑制窗口/rAF 覆盖/pointercancel/键盘/reduced-motion/WebGL 兜底/仓库卫生）
 
 ## 三、体积与归档取舍（如实说明）
 
 | 包 | ZIP 内条目 | 处理 |
 |---|---|---|
 | src | 2,629 文件 | 原始 ZIP 归档；**不再内嵌页脚源码包**（自引用排除，终止逐轮滚雪球） |
-| dist | 2,556 文件 | 原始 ZIP 归档；内容即 gh-pages 全量（第 24 轮 ZIP 11,851,401 B） |
+| dist | 2,556 文件 | 原始 ZIP 归档；内容即 gh-pages 全量（第 25 轮 ZIP 11,859,291 B，内嵌页脚 ZIP 与 src zip 同哈希） |
 
 - **dist 形态变化说明**：第 18 轮 dist 为 `bun run build` 的 **standalone 产物**（93 MB / 4,553 文件，含 73 MB node_modules），仅适合容器内 `bun server.js` 运行，GitHub Pages 无法托管。第 21 轮起 dist 更换为 **`NEXT_EXPORT=1 NEXT_BASE_PATH=/asset-drop` 官方静态导出**（纯静态无 node_modules），与 gh-pages 分支同源同哈希路径规则，解压即站点；standalone 形态可随时由 src 包 `bun run build` 复现。第 22 轮 dist 增至 11.5 MB，主因 `official-md-ripple/vendor/`（lit 3.3.2 运行时 7 包）首次随包分发。
 
@@ -64,7 +62,7 @@
 
 ```
 asset-drop/
-├── archives/   # 两份原始 ZIP（第 24 轮）
+├── archives/   # 两份原始 ZIP（第 25 轮）
 ├── inspect/    # 从 src ZIP 提取的关键文本（PACKAGE-INFO / 根配置 / 9 个 aosp 引擎）
 ├── MANIFEST.md
 └── README.md
@@ -73,7 +71,7 @@ asset-drop/
 ## 六、Pages 部署（gh-pages 分支）
 
 - 站点：**https://ariefenv-hash.github.io/asset-drop/** · 数据源 `gh-pages / root` · legacy 模式
-- **第 24 轮 gh-pages 更新**：由 `NEXT_EXPORT=1 NEXT_BASE_PATH=/asset-drop` 从源码官方静态导出全量替换（2,556 文件 + `.nojekyll`），与 `archives/aosp-ripple-port-web-dist.zip` 同源；含第 22-24 轮全部修复（对照页 basePath / lit 运行时 / switch 约束状态层与拖拽吸附 / 第 24 轮自审加固）
+- **第 25 轮 gh-pages 更新**：由 `NEXT_EXPORT=1 NEXT_BASE_PATH=/asset-drop` 从源码官方静态导出全量替换（2,556 文件 + `.nojekyll`），与 `archives/aosp-ripple-port-web-dist.zip` 同源；含第 22-25 轮全部修复（导航三件套锚定/抽屉纵向锁定/形变画布清晰度/配色预览四风格可点击/剪切图标还原/第 24 轮自审加固）
 - **线上复测（2026-11-22，已推送 51be518 / 40c7151）**：首页 200 · `official-md-ripple/index.html` 200 · 页脚 ZIP 200 · GoogleSansFlex 字体 200；线上 HTML 核验为第 24 轮构建（iframe/zip 均带 `/asset-drop` 前缀）；对照页 md-switch 升级断言在沙盒无头浏览器中卡于 interactive，经三重判别（curl 全 200 / Python 12 线程并发拉全模块图 8.5s 全 200 / 同构建本地子路径模拟 5/5 升级）定论为沙盒浏览器到 github.io 的 TLS 连接不稳（同轮 git push 亦先报 GnuTLS -110 后 HTTP/1.1 重试成功），非部署缺陷
 - 第 22-23 轮修复版曾因令牌失效滞留本地（第 18 轮令牌已按约定用后撤销），本轮新令牌到位后 main + gh-pages 一次性推送
 - 第 18 轮 gh-pages 为「standalone 产物静态化拼接」，存在预渲染 HTML 与客户端不一致导致的 React #418 hydration 警告与部分交互不完整；第 21 轮改为**官方 `output:"export"` 源码级导出**，预渲染即构建期产出、组件树与客户端 bundle 同源，该已知局限按导出机制预期消除（线上复测以 Pages 发布后无头访问为准）

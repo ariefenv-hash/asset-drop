@@ -5,7 +5,14 @@
  *   and MaterialDynamicColors token resolution for M3 & MD3E surfaces.
  */
 
-export type ThemeVariant = 'tonal_spot' | 'expressive';
+/**
+ * DynamicScheme 风格变体。
+ * 第 25 轮由 'tonal_spot' | 'expressive' 扩展为 ColorProvider.kt styleList 全集
+ * （TONAL_SPOT / SPRITZ / VIBRANT / EXPRESSIVE），与配色方案圆形预览四风格对齐。
+ * CoreSpec 取值 = packages/SystemUI/monet/src/com/android/systemui/monet/ColorScheme.kt
+ * （aosp-mirror android-13.0.0_r1，L136-186 Style enum，联网逐字核对）。
+ */
+export type ThemeVariant = 'tonal_spot' | 'spritz' | 'vibrant' | 'expressive';
 
 export interface M3ThemeTokens {
   seedHex: string;
@@ -743,6 +750,13 @@ const EXPRESSIVE_HUES = [0, 21, 51, 121, 151, 191, 271, 321, 360];
 const EXPRESSIVE_SEC_ROT = [45, 95, 45, 20, 45, 90, 45, 45, 45];
 const EXPRESSIVE_TER_ROT = [120, 120, 20, 45, 20, 15, 20, 120, 120];
 
+// VIBRANT 分段旋转表（ColorScheme.kt L69-81 HueVibrantSecondary/Tertiary 原值）
+const VIBRANT_HUES = [0, 41, 61, 101, 131, 181, 251, 301, 360];
+const VIBRANT_SEC_ROT = [18, 15, 10, 12, 15, 18, 15, 12, 12];
+const VIBRANT_TER_ROT = [35, 30, 20, 25, 30, 35, 30, 25, 25];
+// ChromaMaxOut（ColorScheme.kt L100-106）：故意超出，由 HCT→sRGB 色域映射截顶
+const VIBRANT_CHROMA_MAX_OUT = 130.0;
+
 function getRotatedHue(hct: Hct, hues: number[], rotations: number[]): number {
   const h = hct.hue;
   for (let i = 0; i <= hues.length - 2; i++) {
@@ -798,7 +812,40 @@ function buildSchemePalettes(
       ),
     };
   }
+  if (variant === 'spritz') {
+    // SPRITZ CoreSpec（ColorScheme.kt L137-143）：a1/a2/a3/n1/n2 全 HueSource，
+    // chroma 12/8/16，中性 2/2。
+    return {
+      primaryPalette: TonalPalette.fromHueAndChroma(sourceHct.hue, 12.0),
+      secondaryPalette: TonalPalette.fromHueAndChroma(sourceHct.hue, 8.0),
+      tertiaryPalette: TonalPalette.fromHueAndChroma(sourceHct.hue, 16.0),
+      neutralPalette: TonalPalette.fromHueAndChroma(sourceHct.hue, 2.0),
+      neutralVariantPalette: TonalPalette.fromHueAndChroma(sourceHct.hue, 2.0),
+    };
+  }
+  if (variant === 'vibrant') {
+    // VIBRANT CoreSpec（ColorScheme.kt L151-157）：a1 ChromaMaxOut=130（色域映射自然截顶）、
+    // a2/a3 走 HueVibrantSecondary/Tertiary 分段旋转表，chroma 24/32；中性 HueSource 10/12。
+    return {
+      primaryPalette: TonalPalette.fromHueAndChroma(
+        sourceHct.hue,
+        VIBRANT_CHROMA_MAX_OUT
+      ),
+      secondaryPalette: TonalPalette.fromHueAndChroma(
+        getRotatedHue(sourceHct, VIBRANT_HUES, VIBRANT_SEC_ROT),
+        24.0
+      ),
+      tertiaryPalette: TonalPalette.fromHueAndChroma(
+        getRotatedHue(sourceHct, VIBRANT_HUES, VIBRANT_TER_ROT),
+        32.0
+      ),
+      neutralPalette: TonalPalette.fromHueAndChroma(sourceHct.hue, 10.0),
+      neutralVariantPalette: TonalPalette.fromHueAndChroma(sourceHct.hue, 12.0),
+    };
+  }
   // SchemeTonalSpot (Android 12-17 standard default)
+  // 注：AOSP-13 ColorScheme.kt L144-150 n1=ChromaConstant(4.0)，本仓基线自历轮取 6.0
+  // （更早轮次的移植口径），为不致全局表面色骤变，第 25 轮如实标注、维持基线不改动。
   return {
     primaryPalette: TonalPalette.fromHueAndChroma(sourceHct.hue, 36.0),
     secondaryPalette: TonalPalette.fromHueAndChroma(sourceHct.hue, 16.0),

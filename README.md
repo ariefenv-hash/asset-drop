@@ -2,9 +2,9 @@
 
 独立新仓库，与 `ariefenv-hash/md3` 完全隔离；md3 本侧已停工，不再改动任何文件与分支。
 
-## 已归档（第 24 轮 · 2026-11-22 滚动更新）
+## 已归档（第 25 轮 · 2026-11-22 滚动更新）
 
-- `archives/aosp-ripple-port-web-src.zip` — AOSP 涟漪移植展示 **第 24 轮** Next.js 工程源码
+- `archives/aosp-ripple-port-web-src.zip` — AOSP 涟漪移植展示 **第 25 轮** Next.js 工程源码
 - `archives/aosp-ripple-port-web-dist.zip` — 对应 **GitHub Pages 静态导出产物**（`NEXT_EXPORT=1 NEXT_BASE_PATH=/asset-drop`，资源路径含 `/asset-drop` 前缀，解压即站点）
 
 完整清单、sha256、dist 形态变化说明与评估报告对照见 **MANIFEST.md**。
@@ -15,21 +15,19 @@
 - 第 18 轮 dist 为 standalone 形态（93 MB 含 node_modules），自第 21 轮起由静态导出取代；standalone 可由 src 包 `bun run build` 复现
 - 需要展开时：`unzip archives/xxx.zip -d build/`（或 `source/`）
 - 本仓做滚动更新与如实记录；归档均附 `zipfile.testzip()` 完整性校验
+- **第 25 轮起打包脚本支持分阶段执行（src → 重建 out → dist）**，保证 Pages 页脚内嵌 ZIP 与归档 src zip 同源同哈希（此前 dist 先于 public 同步构建，页脚包落后一轮）
 
-## 第 24 轮要点（全面自审驱动）
+## 第 25 轮要点（用户复核两弹驱动）
 
-- **派生 click 吞掉标志残留修复**：pointercancel 结束拖拽后浏览器不派发 click，旧布尔标志残留会吞掉下一次正常点击（开关"点不动一次"）；改为 600ms 时间窗 + pointerdown 重置（实测 cancel 后紧接 click 正常切换）
-- **拖拽 rAF 覆盖吸附落位修复**：pointerup/cancel 后残留的 applyDragPosition rAF 会在下一帧把小球拉回中途位置（快速拖拽+松手"卡在中途"实错根因）；释放/取消统一取消未决 rAF + pressedRef 守卫
-- **pointercancel 语义修正**：由"当作松手做吸附判定"改为"手势中止"——回弹按压前状态、不派发 onChange、不设 click 抑制窗口（与原生开关语义一致）
-- **键盘加固**：key repeat 不再重复生成涟漪 session；键盘涟漪生长点从轨道中心改为小球实际中心（状态层盒中心，与官方"涟漪生长于小球状态层"语义一致）；释放定时器收进卸载清理
-- **prefers-reduced-motion**：撤位移/过冲动画与按压微放大，仅保留 67ms 颜色过渡（M3 无障碍基线）
-- **WebGL2 不可用兜底**：官方 pressed-state-layer-opacity 0.12 的 CSS 状态层补位，几何与 WebGL 路径一致（40×40 圆、贴小球），消除"按下零反馈"降级死区
-- **移动端长按体验**：屏蔽 contextmenu / 文本选择 / iOS 长按呼出气泡
-- **仓库卫生**：.next 缓存/out/tmp/日志共 5,366 个产物文件移出 git 跟踪；.gitignore 系统化（.env* / .DS_Store / tool-results 等）
-- **打包修正**：src zip 不再自引用内嵌的 public/aosp-ripple-port-src.zip（此前逐轮滚雪球，14.4MB → 修正后 7.5MB）
-- 端到端实测：`tsc --noEmit` 零错误；Pages 子路径本地模拟（首页/对照页/zip/字体全 200）；浏览器断言——点击切换、双向拖拽吸附、欠中点回弹、快速甩动落位、pointercancel 中止回弹且不吞后续点击、Enter/Space 切换、iframe 内 md-switch 5/5 升级、深色模式与页尾三栏说明渲染，全部通过
+- **"剪切" content_cut 矢量图标路径还原**：此前为损坏手写路径（弧线端点/圆孔半径全错，渲染畸形）；还原为 Material Icons 原版，与同组复制/粘贴一致
+- **7 种几何形变加载指示器画布清晰度修复**：撤销 2.5 DPR 上采样顶 → 真实 `devicePixelRatio × visualViewport` 捏合缩放逐帧重设后备缓冲（封顶 8 防病态值）；硬边贝塞尔剪影在浏览器缩放/捏合下不再比周围 SVG/文本发虚；大面积软边 WebGL 涟漪画布维持 2.5 封顶（差异不可见，既定性能口径）
+- **导航抽屉纵向滚动锁定**：滚动容器补 `overflow-x hidden` + `touchAction: pan-y` + `overscrollBehavior: contain`（standard + modal 双处）；条目按钮去掉 `w-full`——100% 宽 + marginInline 12 曾撑出 12px 横向溢出（"能左右滑"真根因），现 `scrollWidth == clientWidth`、强制 scrollLeft 恒 0
+- **底部导航/侧边轨/抽屉胶囊与角标锚定修复**：激活胶囊（56×32）、hover 层与角标改锚定到精确 24×24 图标盒——内联 svg 基线排版上浮 + "图标+文字"整组居中曾使胶囊对不准图标、角标贴不上图标顶角（"下方的字把位置挤上去"实错）；侧边轨补角标演示（首页 99+，折叠/展开两形制）
+- **ThemeVariant 扩展为 styleList 全集**（+spritz/vibrant）：`buildM3Theme` 调色板 CoreSpec 逐值取自 AOSP-13 `ColorScheme.kt` L136-186（aosp-mirror 联网逐字核对：Spritz 12/8/16 中性 2/2 · Vibrant MaxOut(130)/旋转表 24/32 中性 10/12）；实验区变体选择器同步扩为 4 项
+- **配色方案圆形预览 8 颗全部可点击应用**：点击 = 应用该风格（全站 themeVariant）+ 该行明暗模式（行 = 浅/深 preview、列 = 四风格，与 WallpaperPicker2「点选颜色选项 = 应用方案」一致）；选中外圈 = themeVariant × isDark 联合判定；四象限加同色 0.75 描边消除扇形共享边抗锯齿发丝缝
+- 端到端实测：`tsc --noEmit` 零错误；浏览器断言——胶囊对中/角标贴角 ✓、抽屉横滑禁用（scrollWidth==clientWidth==360）✓、预览点击切风格+明暗+选择器联动 ✓、形变画布 48×dpr 重设 ✓、modal 抽屉 scrim+滑入 ✓；三 zip 同源同哈希（页脚 ZIP = 归档 src zip）
 
-## 第 22-23 轮要点（承接）
+## 第 22-24 轮要点（承接）
 
 - **对照页 404 根因修复**：iframe src / 页脚 zip href / @font-face URL 全部 basePath 感知（`NEXT_PUBLIC_BASE_PATH` 构建期内联）；本地 `/asset-drop/` 子路径模拟 Pages 复现-验证闭环
 - **对照页运行时修复**：`official-md-ripple/vendor/` 内联 lit 3.3.2 全家，importmap 改指 `./vendor/*`，md-switch / md-ripple / md-filled-button 实测升级
@@ -37,10 +35,9 @@
 - **涟漪滥用修正**：移植版开关撤无界光晕 → 官方同几何约束状态层（AOSP 星斑着色器 + maskRadii 圆形裁剪）
 - **开关交互增强**（Web 增强项、官方无拖拽、如实注明）：按压 24→28dp + 1.05 微放大；左右拖拽（PointerCapture + rAF 命令式写 DOM）；松手自动吸附判定（越中点/甩动切换，否则 300ms 官方过冲缓动回弹）
 - **页尾新增「关于本项目」三栏说明**（项目性质/溯源/分发）
-- **涟漪演示底色残留根修**：session 级定时器 Map + 多指按压记账 + 15s 自愈保险
-- **字体混排双保险**：双 format 回退 + 3.9MB TTF preload
+- **第 24 轮全面自审加固**：派生 click 抑制窗口残留 / 拖拽 rAF 覆盖吸附落位 / pointercancel 语义 / 键盘 repeat / prefers-reduced-motion / WebGL2 不可用 CSS 兜底 / 移动端长按屏蔽 / 仓库卫生（5,366 产物文件出库）+ 打包自引用排除
 
 ## 线上预览
 
 **https://ariefenv-hash.github.io/asset-drop/** （gh-pages 分支）
-- 第 24 轮（含第 22-23 轮全部修复）已随本次推送同步上线：对照页 / 页脚 ZIP / 官方 md-switch 对照可直接验证
+- 第 25 轮（含第 22-24 轮全部修复）已随本次推送同步上线：导航三件套锚定、抽屉纵向锁定、形变画布清晰度、配色预览四风格可点击应用均可在线验证

@@ -1,60 +1,47 @@
 AOSP 涟漪移植展示 · 打包说明
 ================================================
-构建时间：2026-11-22（第 24 轮，含第 22-23 轮全部修复）
+构建时间：2026-11-22 04:54（第 25 轮）
 基线：AOSP Android 17 (android-17.0.0_r1) · @material/web 2.5.0（pkg/ 原文内联运行）· MDC-Android 1.14.0
+· Monet CoreSpec = packages/SystemUI/monet ColorScheme.kt（aosp-mirror android-13.0.0_r1）
 
 一、本包内容
 ------------------------------------------------
 1) aosp-ripple-port-web-src.zip —— Next.js 预览工程源码（可复现构建）
-   - src/             9 个 aosp 引擎文件 + 22 个组件文件 + src/lib/publicPath.ts
-   - public/          官方对照 iframe（pkg/ 原文 + vendor/ lit 3.3.2 运行时 7 包）、字体
-   - evidence/        MDC-Android 1.14.0 取证转储（material.aar + 12 份 tokens.xml
-                      + resolved-structural.txt 引用链解析）
-   - 根配置           package.json / next.config.ts / tsconfig / tailwind / bun.lock / .gitignore
-
+   - src/        9 个 aosp 引擎文件 + 22 个组件文件 + 官方对照 iframe
+   - public/     official-md-ripple（pkg/ 原文 + vendor/ lit 3.3.2）、字体、页脚内嵌源码包
+   - evidence/   MDC-Android 1.14.0 官方 AAR + tokens 取证转储
+   - 根配置      package.json / next.config.ts / tsconfig / tailwind / bun.lock / .gitignore
 2) aosp-ripple-port-web-dist.zip —— GitHub Pages 静态导出产物
-   - out/             NEXT_EXPORT=1 NEXT_BASE_PATH=/asset-drop 官方静态导出
-                      （纯静态 HTML/JS/CSS + .nojekyll，解压即站点）
+   NEXT_EXPORT=1 NEXT_BASE_PATH=/asset-drop 生成（out/），解压即站点；
+   纯静态、无 node_modules，与 gh-pages 分支同源。
 
-二、第 24 轮变更（全面自审驱动）
+二、第 25 轮变更（用户复核两弹驱动）
 ------------------------------------------------
-- 开关派生 click 吞掉标志残留修复：pointercancel / lostpointercapture 结束拖拽
-  时浏览器不派发 click，旧布尔标志残留会吞掉下一次正常点击（开关"点不动一次"）；
-  改为 600ms 时间窗 + pointerdown 重置（实测 cancel 后紧接 click 正常切换）
-- 拖拽 rAF 覆盖吸附落位修复：pointerup/cancel 后残留的 applyDragPosition rAF
-  会在下一帧把小球拉回中途位置（快速拖拽+松手"卡在中途"实错根因）；
-  现释放/取消统一取消未决 rAF + applyDragPosition 加 pressedRef 守卫
-- pointercancel 语义修正：由"当作松手做吸附判定"改为"手势中止"——回弹按压前
-  状态、不派发 onChange、不设 click 抑制窗口（与原生开关语义一致）
-- 键盘加固：key repeat 不再重复生成涟漪 session；键盘涟漪生长点从轨道中心改为
-  小球实际中心（状态层盒中心）；释放定时器收进卸载清理
-- prefers-reduced-motion：撤位移/过冲动画与按压微放大，仅保留 67ms 颜色过渡
-  （M3 无障碍基线）
-- WebGL2 不可用兜底：以官方 pressed-state-layer-opacity 0.12 的 CSS 状态层补位，
-  几何与 WebGL 路径一致（40×40 圆、贴小球），消除"按下零反馈"降级死区
-- 移动端长按体验：屏蔽 contextmenu / 文本选择 / iOS 长按呼出气泡
-- 仓库卫生：.next 缓存/out/tmp/日志共 5,366 个产物文件移出 git 跟踪，
-  .gitignore 系统化（.env* / .DS_Store / tool-results 等）
-- 打包修正：src zip 不再自引用内嵌的 public/aosp-ripple-port-src.zip
-  （此前逐轮滚雪球，本轮原方案 14.4MB → 修正后 7.5MB）
-- 端到端实测：tsc 零错误；Pages 子路径本地模拟（首页/对照页/zip/字体全 200）；
-  浏览器断言——点击切换、双向拖拽吸附、欠中点回弹、快速甩动落位、
-  pointercancel 中止回弹且不吞后续点击、Enter/Space 切换、iframe 内
-  md-switch 5/5 升级、深色模式与页尾三栏说明渲染，全部通过
+- "剪切"按钮 content_cut 矢量图标路径还原为 Material Icons 原版
+  （此前路径为损坏手写版：弧线端点/圆孔半径全错，渲染畸形；同组复制/粘贴本为原版）
+- 7 种几何形变加载指示器画布清晰度修复：撤销 2.5 DPR 上采样顶，
+  改按真实 devicePixelRatio × visualViewport 捏合缩放逐帧重设后备缓冲（封顶 8 防病态值）；
+  硬边贝塞尔剪影在浏览器缩放/捏合下不再比周围 SVG/文本发虚；
+  大面积软边 WebGL 涟漪画布维持 2.5 封顶（差异不可见，既定性能口径）
+- 导航抽屉（standard + modal）纵向滚动锁定：滚动容器补 overflow-x hidden +
+  touchAction pan-y + overscrollBehavior contain；条目按钮去掉 w-full
+  （100% 宽 + marginInline 12 曾撑出 12px 横向溢出——"能左右滑"真根因）
+- 底部导航/侧边导航轨/导航抽屉：激活胶囊（56×32）、hover 层与角标改锚定到
+  精确 24×24 图标盒（内联 svg 基线排版上浮 + "图标+文字"整组居中曾使胶囊/角标错位）；
+  侧边导航轨补角标演示（首页 99+，折叠/展开两形制同锚定）
+- ThemeVariant 由 tonal_spot|expressive 扩展为 styleList 全集（+spritz/vibrant），
+  buildM3Theme 调色板 CoreSpec 逐值取自 AOSP-13 ColorScheme.kt L136-186
+  （Spritz 12/8/16 中性 2/2 · Vibrant MaxOut(130)/旋转表 24/32 中性 10/12，联网逐字核对）
+- 配色方案圆形预览 8 颗全部可点击：点击 = 应用该风格 + 该行明暗模式
+  （行 = 浅/深 preview，列 = TONAL_SPOT/SPRITZ/VIBRANT/EXPRESSIVE；
+  选中外圈 = themeVariant × isDark 联合判定）；实验区变体选择器同步扩为 4 项
+- 四象限圆形预览加同色 0.75 描边消除扇形共享边抗锯齿发丝缝
+- 端到端：tsc 零错误 · 浏览器实测（胶囊对中/角标贴角/抽屉 scrollWidth==clientWidth/
+  强制 scrollLeft=0/预览点击切风格+明暗/实验区选择器联动/形变画布 48×dpr 重设）
 
-三、第 22-23 轮既有要点（承接）
-------------------------------------------------
-- 对照页 404 根因修复：basePath 构建期内联（iframe / zip / @font-face 全感知）
-- 对照页运行时修复：vendor/ 内联 lit 3.3.2，md-switch / md-ripple / md-filled-button 升级
-- switch 按压涟漪源码实证：官方 md-ripple = 小球中心 40×40 圆形状态层
-  （switch.js L116 · _handle.scss L134-140 · pressed 0.12），永不扩散过整条轨道
-- 涟漪滥用修正：撤无界光晕 → 官方同几何约束状态层（星斑着色器 + maskRadii）
-- 开关交互增强：按压 24→28dp + 1.05 微放大；左右拖拽；松手自动吸附判定
-- 页尾「关于本项目」三栏说明；涟漪演示底色残留根修；字体混排双保险
-
-四、运行
+三、运行
 ------------------------------------------------
   bun install && bun run dev          # http://localhost:3000
   NEXT_EXPORT=1 NEXT_BASE_PATH=/asset-drop bun run build   # 静态导出 out/
-  （注：package.json build 脚本尾部的 cp 步骤仅 standalone 形态需要，
-   导出形态该步报错可忽略——out/ 已生成；见第 24 轮自审备注）
+  （注：next.config.ts build 脚本尾部的 cp 步骤仅 standalone 形态需要，
+   导出形态出现 cp 报错可忽略——out/ 已生成）
