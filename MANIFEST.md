@@ -2,37 +2,39 @@
 
 > 本仓为**资源中转仓**，与 `ariefenv-hash/md3` 完全隔离。md3 本侧已停工。
 > 归档内容**原样保留、未做任何修改**。
-> **第 26 轮（2026-11-22）归档滚动更新**：在承接第 22-25 轮基础上，完成用户复核第 4 弹（全项目降采样排查收官：共享口径 effectiveRasterDpr + 小画布给足真实分辨率/舞台限幅 cap4；开关状态层"偏下+松手跳一下"根修：border 包含块偏移 → calc(50% - 半径)），取代第 25 轮归档（第 18/21/23/24/25 轮历史数据见本文件后半与 git 历史）。
+> **第 27 轮（2026-11-22）归档滚动更新**：在承接第 22-26 轮基础上，完成全站去 npm 化（运行时依赖收敛到 react/react-dom/next 三个；lucide-react 卸载 → Material Symbols 官方路径数据内联自研图标模块；shadcn/Radix/Prisma 死代码出库），取代第 26 轮归档（第 18/21/23/24/25/26 轮历史数据见本文件后半与 git 历史）。
 
-## 一、两份原始归档（第 26 轮）
+## 一、两份原始归档（第 27 轮）
 
 | 文件 | 大小 | sha256 |
 |---|---|---|
-| `archives/aosp-ripple-port-web-src.zip` | 7,554,234 B | `d59f65046ce33a2cea74e27127a10a023c7b2dcdd415ce28241ab5dbfc6457cc` |
-| `archives/aosp-ripple-port-web-dist.zip` | 11,859,901 B | `221b5147d910eec88c2ed1c756b304401389d0ebf6f54814536902a03822f7e7` |
+| `archives/aosp-ripple-port-web-src.zip` | 7,453,298 B | `415d9c02b75da9602fa514fd21dca8d86f49749f660acf49df322cc8f0bc449e` |
+| `archives/aosp-ripple-port-web-dist.zip` | 11,594,468 B | `faae48c55f4e8b68e3c3e18689f21234eebb4fb548dfdcbe56db92314d605b05` |
 
 两份均通过 `zipfile.testzip()` 完整性校验（无损坏条目）；**三包同源同哈希**：dist 内嵌页脚 ZIP（`aosp-ripple-port-src.zip`）= 归档 src zip（本轮新增校验，此前 dist 先于 public 同步构建，页脚包落后一轮）。
 
 ## 二、内容概览（来自 PACKAGE-INFO.txt）
 
-- **构建时间**：2026-11-22（**第 26 轮**）
+- **构建时间**：2026-11-22（**第 27 轮**）
 - **基线**：AOSP Android 17 `android-17.0.0_r1` · `@material/web 2.5.0`（pkg/ 原文内联运行）· MDC-Android 1.14.0 · Monet CoreSpec = `packages/SystemUI/monet/ColorScheme.kt`（aosp-mirror android-13.0.0_r1）
-- **src**：Next.js 预览工程源码（9 个 aosp 引擎文件 + 22 个组件文件 + 官方对照 iframe（pkg/ 原文 + vendor/ lit 3.3.2）+ evidence/ 取证转储）
+- **src**：Next.js 预览工程源码（9 个 aosp 引擎文件 + 15 个组件文件（含自研图标模块 icons/）+ 官方对照 iframe（pkg/ 原文 + vendor/ lit 3.3.2）+ evidence/ 取证转储）
 - **dist**：**`NEXT_EXPORT=1 NEXT_BASE_PATH=/asset-drop` 静态导出产物（GitHub Pages 直托形态）**，资源根路径已注入 `/asset-drop` 前缀
-- **第 26 轮变更（用户复核第 4 弹：全项目降采样排查 + 开关状态层偏移）**：
-  - **全项目降采样排查收官**：新增共享口径 `effectiveRasterDpr(cap) = devicePixelRatio × visualViewport.scale`（捏合缩放计入），封顶防病态值；小画布（开关状态层 40dp · 涟漪面 24-96dp · 形变指示器 48dp）全部给足真实分辨率（cap 8），大面积 WebGL 实验区舞台 cap 2.5→4（软边涟漪下收益递减，限幅保帧率，数学叠层半径换算同步）
-  - **开关状态层"偏下 + 松手跳一下"根修**：绝对定位包含块为 padding box，unchecked 态 border-2 把固定 top 值整体压低 2px（实测圆心 18 vs 小球 16），checked 翻转瞬间跳变 2px；`top: calc(50% - 20px)` 后两种状态、翻转前后圆心恒与 border-box 中心重合（浏览器逐帧采样实测双向翻转全程 cy=16 无跳变）
-  - **顺带审计**：RippleSurface/Switch 空闲画布停在默认 300×150 属正常（tick 首帧先重设后绘制，空闲透明不可见）；共享 WebGL 渲染器画布按调用方 dpr 逐次重设，无隐藏瓶颈
+- **第 27 轮变更（全站去 npm 化：运行时依赖收敛到 react/react-dom/next）**：
+  - **图标体系源码化**：14 个组件文件卸载 lucide-react，新增 `src/components/icons/`——google/material-design-icons 官方 Material Symbols Rounded/Outlined fill1 24px 路径数据【原样内联】（60 枚，单 path 无变换，viewBox 官方口径 `0 -960 960 960`，fill=currentColor），与 AOSP SystemUI / M3 官方同源同风格；"复制/粘贴/剪切" content_copy/content_paste/content_cut 对号入座，SplitButton 手绘感叹号换官方 error
+  - **死代码出库**：src/components/ui（shadcn/Radix 全套，仅 Toaster 曾被挂载且演示从未派发 toast）、src/hooks、src/lib/db.ts（PrismaClient 唯一引用点）、prisma/、components.json、src/lib/utils.ts
+  - **package.json 收敛**：dependencies 仅剩 next/react/react-dom；devDependencies 仅剩 typescript/@types/react/@types/react-dom/tailwindcss/@tailwindcss/postcss/eslint/eslint-config-next；移除 65 组直依赖（radix 全家/lucide/prisma/sharp/z-ai-sdk/framer-motion/tanstack 等脚手架残留）
+  - **样式与字体**：globals.css 摘除 tw-animate-css（全站零引用）；@theme font-sans/font-mono 映射改指真实混排栈；layout.tsx 摘除 Toaster 与 Geist/next-font；tsconfig exclude 补 skills/scripts
+- **第 26 轮变更（承接）**：全项目降采样排查收官（effectiveRasterDpr 共享口径 + 小画布 cap8/舞台 cap4）· 开关状态层"偏下+松手跳一下"根修（calc(50% - 半径)）
 - **第 25 轮变更（承接）**："剪切" content_cut 图标还原 · 形变画布清晰度（撤 2.5 上采样顶）· 导航抽屉纵向滚动锁定（w-full 横溢根因）· 导航三件套胶囊/角标锚定精确 24×24 图标盒 · ThemeVariant 扩 styleList 全集（AOSP-13 CoreSpec 联网取证）· 配色圆形预览 8 颗可点击应用（行=明暗/列=风格）· 打包时序修正（三 zip 同源同哈希）
-- **端到端自测（第 26 轮实测）**：`tsc --noEmit` 零错误 · unchecked/checked 状态层圆心 delta 均为 0 · 双向翻转逐帧采样无跳变 · 实验区触发生成无报错 · 三包同源同哈希 ✓
+- **端到端自测（第 27 轮实测）**：`tsc --noEmit` 零错误 · next build（standalone）通过 · 浏览器断言——127 枚图标全部官方 viewBox（0 枚遗留笔画风格）· badge 锚定（上探 4px/右伸 8px 与设计值一致）· 抽屉 scrollWidth==clientWidth==360 且强制横滑归零 · 配色预览 8 颗点击应用（风格+明暗双轴联动实测）· Google Sans Flex 加载成功 · 控制台零错误 · 三包同源同哈希 ✓
 - **第 22-25 轮变更（承接，详见 git 历史）**：对照页 404 根因修复（basePath 构建期内联）· vendor/ 内联 lit 3.3.2 · switch 按压涟漪源码实证（40×40 state-layer）· 涟漪滥用修正 · 按压微放大/拖拽/吸附 · 页尾三栏说明 · 第 24 轮自审加固（click 抑制窗口/rAF 覆盖/pointercancel/键盘/reduced-motion/WebGL 兜底/仓库卫生）· 第 25 轮（图标还原/画布清晰度/抽屉锁定/锚定/四风格可点击）
 
 ## 三、体积与归档取舍（如实说明）
 
 | 包 | ZIP 内条目 | 处理 |
 |---|---|---|
-| src | 2,629 文件 | 原始 ZIP 归档；**不再内嵌页脚源码包**（自引用排除，终止逐轮滚雪球） |
-| dist | 2,556 文件 | 原始 ZIP 归档；内容即 gh-pages 全量（第 26 轮 ZIP 11,859,901 B，内嵌页脚 ZIP 与 src zip 同哈希） |
+| src | 2,577 文件 | 原始 ZIP 归档；**不再内嵌页脚源码包**（自引用排除，终止逐轮滚雪球） |
+| dist | 2,542 文件 | 原始 ZIP 归档；内容即 gh-pages 全量（第 27 轮 ZIP 11,594,468 B，内嵌页脚 ZIP 与 src zip 同哈希） |
 
 - **dist 形态变化说明**：第 18 轮 dist 为 `bun run build` 的 **standalone 产物**（93 MB / 4,553 文件，含 73 MB node_modules），仅适合容器内 `bun server.js` 运行，GitHub Pages 无法托管。第 21 轮起 dist 更换为 **`NEXT_EXPORT=1 NEXT_BASE_PATH=/asset-drop` 官方静态导出**（纯静态无 node_modules），与 gh-pages 分支同源同哈希路径规则，解压即站点；standalone 形态可随时由 src 包 `bun run build` 复现。第 22 轮 dist 增至 11.5 MB，主因 `official-md-ripple/vendor/`（lit 3.3.2 运行时 7 包）首次随包分发。
 

@@ -2,20 +2,40 @@
 
 独立新仓库，与 `ariefenv-hash/md3` 完全隔离；md3 本侧已停工，不再改动任何文件与分支。
 
-## 已归档（第 26 轮 · 2026-11-22 滚动更新）
+## 已归档（第 27 轮 · 2026-11-22 滚动更新）
 
-- `archives/aosp-ripple-port-web-src.zip` — AOSP 涟漪移植展示 **第 26 轮** Next.js 工程源码
+- `archives/aosp-ripple-port-web-src.zip` — AOSP 涟漪移植展示 **第 27 轮** Next.js 工程源码
 - `archives/aosp-ripple-port-web-dist.zip` — 对应 **GitHub Pages 静态导出产物**（`NEXT_EXPORT=1 NEXT_BASE_PATH=/asset-drop`，资源路径含 `/asset-drop` 前缀，解压即站点）
 
 完整清单、sha256、dist 形态变化说明与评估报告对照见 **MANIFEST.md**。
 
 ## 说明
 
-- `dist` 解压后 21.6 MB / 2,556 文件（纯静态导出，**无 node_modules**，与 gh-pages 分支同源）
+- `dist` 解压后 21.5 MB / 2,542 文件（纯静态导出，**无 node_modules**，与 gh-pages 分支同源）
 - 第 18 轮 dist 为 standalone 形态（93 MB 含 node_modules），自第 21 轮起由静态导出取代；standalone 可由 src 包 `bun run build` 复现
 - 需要展开时：`unzip archives/xxx.zip -d build/`（或 `source/`）
 - 本仓做滚动更新与如实记录；归档均附 `zipfile.testzip()` 完整性校验
 - **第 25 轮起打包脚本支持分阶段执行（src → 重建 out → dist）**，保证 Pages 页脚内嵌 ZIP 与归档 src zip 同源同哈希（此前 dist 先于 public 同步构建，页脚包落后一轮）
+
+## 第 27 轮要点（全站去 npm 化：运行时依赖收敛到 react/react-dom/next）
+
+- **图标体系源码化**：14 个组件文件卸载 lucide-react，新增 `src/components/icons/`——
+  google/material-design-icons 官方 Material Symbols Rounded/Outlined fill1 24px
+  路径数据【原样内联】（60 枚，单 path、零变换，viewBox 官方口径 `0 -960 960 960`，
+  fill=currentColor）；全站 127 处图标全部官方字形，与 AOSP SystemUI / M3 官方同源
+  同风格；"复制/粘贴/剪切" content_copy/content_paste/content_cut 对号入座
+  （修复了本轮替换过程中首枚内联 SVG 误匹配导致的"复制"短暂错位剪刀），
+  SplitButton 手绘感叹号换官方 error 字形
+- **死代码出库**：src/components/ui（shadcn/Radix 全套）、src/hooks、src/lib/db.ts、
+  prisma/、components.json、src/lib/utils.ts——演示层零引用，纯脚手架残留
+- **package.json 收敛**：dependencies 仅剩 next/react/react-dom；devDependencies 仅剩
+  typescript/@types/react/@types/react-dom/tailwindcss/@tailwindcss/postcss/eslint/
+  eslint-config-next；移除 65 组直依赖；bun.lock 同步剪除
+- **样式与字体**：globals.css 摘除 tw-animate-css；@theme font 映射改指真实混排栈；
+  layout.tsx 摘除 Toaster 与 Geist/next-font（Google Sans Flex 本地 TTF 不变）
+- 端到端实测：tsc 零错误 · standalone build 通过 · 127 枚图标全官方 viewBox（0 遗留）·
+  badge 锚定 4px/8px 与设计值一致 · 抽屉 scrollWidth==clientWidth==360 且强制横滑归零 ·
+  配色预览 8 颗点击应用双轴联动实测通过 · 字体加载正常 · 控制台零错误 · 三 zip 同源同哈希
 
 ## 第 26 轮要点（用户复核第 4 弹：全项目降采样排查 + 开关状态层偏移）
 

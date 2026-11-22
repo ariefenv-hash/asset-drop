@@ -1,0 +1,50 @@
+AOSP 涟漪移植展示 · 打包说明
+================================================
+构建时间：2026-11-22 05:55（第 27 轮）
+基线：AOSP Android 17 (android-17.0.0_r1) · @material/web 2.5.0（pkg/ 原文内联运行）· MDC-Android 1.14.0
+· Monet CoreSpec = packages/SystemUI/monet ColorScheme.kt（aosp-mirror android-13.0.0_r1）
+
+一、本包内容
+------------------------------------------------
+1) aosp-ripple-port-web-src.zip —— Next.js 预览工程源码（可复现构建）
+   - src/        9 个 aosp 引擎文件 + 15 个组件文件（含自研图标模块 icons/）
+                 + 官方对照 iframe
+   - public/     official-md-ripple（pkg/ 原文 + vendor/ lit 3.3.2）、字体、页脚内嵌源码包
+   - evidence/   MDC-Android 1.14.0 官方 AAR + tokens 取证转储
+   - 根配置      package.json / next.config.ts / tsconfig / postcss / eslint / bun.lock / .gitignore
+2) aosp-ripple-port-web-dist.zip —— GitHub Pages 静态导出产物
+   NEXT_EXPORT=1 NEXT_BASE_PATH=/asset-drop 生成（out/），解压即站点；
+   纯静态、无 node_modules，与 gh-pages 分支同源。
+
+二、第 27 轮变更（全站去 npm 化：运行时依赖收敛到 react/react-dom/next 三个）
+------------------------------------------------
+- 图标体系源码化：14 个组件文件卸载 lucide-react，新增 src/components/icons/
+  ——google/material-design-icons 官方 Material Symbols Rounded/Outlined fill1 24px
+  路径数据【原样内联】（60 枚，单 path 无变换），viewBox 官方口径 "0 -960 960 960"，
+  fill="currentColor"；全站 127 处图标渲染全部官方字形（含"复制/粘贴/剪切"
+  content_copy/content_paste/content_cut 对号入座、SplitButton 手绘感叹号换官方
+  error），与 AOSP SystemUI / M3 官方同源同风格
+- 死代码出库：src/components/ui（shadcn/Radix 全套，仅 Toaster 曾被挂载且演示
+  从未派发 toast）、src/hooks（use-toast/use-mobile）、src/lib/db.ts（PrismaClient
+  唯一引用点）、prisma/、components.json、src/lib/utils.ts（cn 依赖 clsx+
+  tailwind-merge，演示层零引用）
+- package.json 收敛：dependencies 仅剩 next/react/react-dom；devDependencies 仅剩
+  typescript/@types/react/@types/react-dom/tailwindcss/@tailwindcss/postcss/eslint/
+  eslint-config-next；移除 65 组直依赖（radix 全家/lucide/prisma/sharp/z-ai-sdk/
+  framer-motion/tanstack 等脚手架残留）
+- globals.css：摘除 tw-animate-css（shadcn 入场工具类，全站零引用）；@theme 的
+  font-sans/font-mono 映射改指真实混排栈（Geist/next-font 已摘除）
+- layout.tsx：摘除 Toaster 与 Geist/Geist_Mono（next/font/google），排版继续走
+  Google Sans Flex（本地 TTF）× 中文可变字体混排
+- tsconfig exclude 补 skills/scripts（沙盒平台脚本不属应用编译范围）
+- 端到端：tsc --noEmit 零错误 · next build（standalone）通过 · 浏览器断言——
+  127 枚图标全部官方 viewBox 且 0 枚遗留笔画风格、badge 锚定（上探 4px/右伸 8px
+  与设计值一致）、抽屉 scrollWidth==clientWidth==360 且强制横滑归零、配色预览
+  8 颗点击应用（风格+明暗双轴）联动正常、Google Sans Flex 加载成功、控制台零错误
+
+三、运行
+------------------------------------------------
+  bun install && bun run dev          # http://localhost:3000
+  NEXT_EXPORT=1 NEXT_BASE_PATH=/asset-drop bun run build   # 静态导出 out/
+  （注：next.config.ts build 脚本尾部的 cp 步骤仅 standalone 形态需要，
+   导出形态出现 cp 报错可忽略——out/ 已生成）
