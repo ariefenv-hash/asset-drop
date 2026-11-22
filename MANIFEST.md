@@ -66,3 +66,14 @@ asset-drop/
 ├── MANIFEST.md
 └── README.md
 ```
+
+## 六、Pages 部署（gh-pages 分支）
+
+- 站点：**https://ariefenv-hash.github.io/asset-drop/** · 数据源 `gh-pages / root` · legacy 模式 · 状态 `built`
+- gh-pages 提交 `eda2f02`，共 **3,223 文件**，由 `archives/aosp-ripple-port-web-dist.zip` **静态化生成**，不修改 main 上的原始 ZIP
+- 页面主体取 Next.js App Router 预渲染的 `.next/server/app/index.html`（内容完整，无需 Node server）；资源取 `_next/static`（26 文件）与 `public/` 全量（含官方 md-ripple 对照 iframe、字体、页脚源码包）
+- 原始根绝对路径 `/xxx` 在部署副本中统一加前缀 `/asset-drop`，适配项目页子路径；`.nojekyll` 保住 `_next/` 目录
+- 无头 Chromium 实测：正文 21,418 字符、H1 正确、iframe 4 个 `md-ripple` 加载、**0 个 4xx / 0 个失败请求**
+- 已知局限：静态托管预渲染 HTML 会有一条 React #418 hydration 文本不匹配控制台错误（服务端/客户端文本差异），内容展示不受影响，但部分客户端交互可能不完整；要完整交互需在 CI 中从源码重新做静态导出构建
+
+> 本侧直访 `*.github.io` 受出口策略 403，以上以 Pages API `built` + gh-pages 文件回读 + 本地模拟 `/asset-drop/` 路径的无头实测为准。

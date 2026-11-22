@@ -15,3 +15,7 @@
 - `dist` 解压后 93 MB / 4,553 文件（含 73 MB node_modules），故只保留原始 ZIP，未展开
 - 需要展开时：`unzip archives/xxx.zip -d build/`（或 `source/`）
 - 本仓只做中转，不修改资源内容；如需精简版、分版本目录或转私有，告诉我即可
+
+## 线上预览
+
+**https://ariefenv-hash.github.io/asset-drop/** （gh-pages 静态副本，详见 MANIFEST.md 第六节）
