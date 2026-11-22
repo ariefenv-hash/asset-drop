@@ -13,6 +13,12 @@ const isExport = process.env.NEXT_EXPORT === "1";
 const basePath = process.env.NEXT_BASE_PATH || "";
 
 const nextConfig: NextConfig = {
+  // 第 22 轮修复：把 basePath 以 NEXT_PUBLIC_ 前缀内联进客户端/服务端 bundle，
+  // 组件里的公共资源引用（iframe、zip、@font-face）按部署形态取正确前缀——
+  // 此前硬编码绝对路径在 GitHub Pages /asset-drop/ 子路径下全部 404。
+  env: {
+    NEXT_PUBLIC_BASE_PATH: basePath,
+  },
   ...(isExport
     ? {
         output: "export" as const,
