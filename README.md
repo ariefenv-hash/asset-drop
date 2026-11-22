@@ -1,19 +1,17 @@
 # asset-drop · 资源文件中转仓
 
-> 独立新仓库，与 `ariefenv-hash/md3` 完全隔离。md3 本侧已停工，不再改动任何文件与分支。
+独立新仓库，与 `ariefenv-hash/md3` 完全隔离；md3 本侧已停工，不再改动任何文件与分支。
 
-## 当前状态
+## 已归档
 
-- 已创建：公开仓库，默认分支 `main`
-- 已推送：本占位提交（资源文件尚未到位）
+- `archives/aosp-ripple-port-web-src.zip` — AOSP 涟漪移植展示 **第 18 轮** Next.js 工程源码
+- `archives/aosp-ripple-port-web-dist.zip` — 对应 standalone 生产构建产物
 
-## 下一步
+平台上传时被改成 `.txt` 后缀，本仓已改回 `.zip`，**字节级未改动**。
+完整清单、sha256、体积取舍与「与 GLM 评估报告的静态对照」见 **MANIFEST.md**。
 
-资源文件下载完成后，把它交给 Yuanbao（上传到对话 / 给下载链接 / 给本地路径，三选一），
-由 Yuanbao 推送到本仓库。
+## 说明
 
-## 提醒
-
-- 单文件 > 100MB 需 Git LFS；仓库总体建议 < 1GB
-- 如资源不适合公开，可随时转为私有
-- 仓库名/可见性可随时改，告诉我即可
+- `dist` 解压后 93 MB / 4,553 文件（含 73 MB node_modules），故只保留原始 ZIP，未展开
+- 需要展开时：`unzip archives/xxx.zip -d build/`（或 `source/`）
+- 本仓只做中转，不修改资源内容；如需精简版、分版本目录或转私有，告诉我即可
