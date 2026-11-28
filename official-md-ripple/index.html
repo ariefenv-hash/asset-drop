@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>官方 @material/web md-ripple / md-switch 对照</title>
+<style>
+  /* Google Sans Flex 走相对路径 ../fonts/ —— 相对引用不受 GitHub Pages
+     /asset-drop/ 子路径前缀影响（第 22 轮修复 iframe 内容 404 的配套项） */
+  @font-face {
+    font-family: 'Google Sans Flex';
+    src: url('../fonts/GoogleSansFlex.ttf') format('truetype-variations');
+    font-weight: 100 1000;
+    font-display: swap;
+  }
+  body { font-family: 'Google Sans Flex', 'Segoe UI', sans-serif; background:#FDF8FD; color:#1D1B20; margin:0; padding:24px; }
+  h1 { font-size: 20px; }
+  h2 { font-size: 15px; margin: 24px 0 4px; }
+  p  { font-size: 13px; line-height: 1.7; }
+  .card { position:relative; overflow:hidden; border-radius:24px; background:#E8DEF8; color:#1D192B;
+          width:320px; height:120px; display:flex; align-items:center; justify-content:center; margin:16px 0; }
+  .wide { width:480px; height:160px; }
+  .btn { position:relative; overflow:hidden; border-radius:100px; background:#6750A4; color:#fff;
+         padding:10px 24px; display:inline-block; margin-right:12px; }
+  code { font-size:12px; color:#555; }
+  .evidence {
+    border-left: 3px solid #6750A4; background:#F3EDF7; border-radius: 0 12px 12px 0;
+    padding: 12px 16px; margin: 12px 0 20px; font-size: 12.5px; line-height: 1.8;
+  }
+  .evidence b { color:#1D192B; }
+  .switch-row { display:flex; flex-wrap:wrap; gap:28px; align-items:center; padding:16px 20px;
+                background:#FFFFFF; border:1px solid #CAC4D0; border-radius:16px; margin:12px 0; }
+  .switch-row figure { margin:0; display:flex; flex-direction:column; align-items:center; gap:8px; }
+  .switch-row figcaption { font-size:11px; color:#49454F; }
+  md-switch { --md-switch-track-width: 52px; }
+</style>
+</head>
+<body>
+<h1>官方 @material/web 2.5.0（Web Components 路线）</h1>
+<p>以下组件为本地真实 npm 包 @material/web 2.5.0 原文件（pkg/ 目录，Apache-2.0），经 importmap
+   指向 vendor/ 内的 lit 3.3.2 运行时直接以源码形态运行，无任何打包转译。</p>
+
+<h2>md-ripple：卡片与按钮按压</h2>
+<p>完整状态机：PRESS_GROW 450ms · MINIMUM_PRESS 225ms · TOUCH_DELAY 150ms · RELEASE 300ms ·
+   WAAPI 操作 ::before/::after，按压涟漪从触点生长并被宿主 border-radius 裁剪。</p>
+<div class="card"><md-ripple></md-ripple>卡片 Surface（点击按住）</div>
+<div class="wide card" style="background:#6750A4;color:#fff"><md-ripple></md-ripple>Filled Card（点击按住）</div>
+<div>
+  <span class="btn"><md-ripple></md-ripple>Filled Button</span>
+  <span class="btn" style="background:#E8DEF8;color:#1D192B"><md-ripple></md-ripple>Tonal Button</span>
+</div>
+
+<h2>md-switch：开关按压的真实涟漪几何</h2>
+<div class="evidence">
+  <b>源码结论（@material/web 2.5.0，本地 pkg/ 原文核对）：</b><br>
+  ① switch/internal/switch.js L116 — md-ripple 实例放在 <code>&lt;span class="handle-container"&gt;</code>
+  内、随小球移动；<br>
+  ② switch/internal/_handle.scss L134-140（编译版 switch-styles.css 同）— 该 md-ripple 被钉死为
+  <b>40×40（state-layer-size）、border-radius: full</b> 的圆形状态层，<code>inset: unset</code>
+  脱离全铺满默认值，居中于小球；<br>
+  ③ 按压透明度 pressed-state-layer-opacity = <b>0.12</b>（hover 0.08），涟漪从触点生长但被宿主
+  overflow:hidden + border-radius:inherit 裁进 40×40 圆内 —— <b>永远不会扩散过整条轨道</b>；<br>
+  ④ 小球本身：按压 <code>:active</code> 时 24→28px（pressed-handle-*，100ms linear），松开
+  250ms cubic-bezier(0.2,0,0,1) 回弹；<br>
+  ⑤ 小球位移（margin）过渡 = <b>300ms cubic-bezier(0.175,0.885,0.32,1.275)</b>（官方自定义过冲缓动）。
+</div>
+<p>按住下方任意开关小球，可以直观看到：扩散只发生在贴着小球的 40×40 小圆内（0.12 淡入状态层），
+同时小球放大到 28px —— 这就是"没有全轨涟漪、只有小区域涟漪"的官方实证。</p>
+<div class="switch-row">
+  <figure>
+    <md-switch icons selected aria-label="示例：选中态带图标"></md-switch>
+    <figcaption>icons · selected（selected 属性，非 checked）</figcaption>
+  </figure>
+  <figure>
+    <md-switch icons aria-label="示例：未选中态带图标"></md-switch>
+    <figcaption>icons · unselected</figcaption>
+  </figure>
+  <figure>
+    <md-switch selected aria-label="示例：选中态无图标"></md-switch>
+    <figcaption>no-icon · selected（小球 24px）</figcaption>
+  </figure>
+  <figure>
+    <md-switch aria-label="示例：未选中态无图标"></md-switch>
+    <figcaption>no-icon · unselected（小球 16px）</figcaption>
+  </figure>
+  <figure>
+    <md-switch selected disabled aria-label="示例：禁用态"></md-switch>
+    <figcaption>disabled</figcaption>
+  </figure>
+</div>
+
+<script type="importmap">
+{
+  "imports": {
+    "tslib": "./vendor/tslib/tslib.es6.mjs",
+    "lit": "./vendor/lit/index.js",
+    "lit/": "./vendor/lit/",
+    "lit-element": "./vendor/lit-element/lit-element.js",
+    "lit-element/": "./vendor/lit-element/",
+    "lit-html": "./vendor/lit-html/lit-html.js",
+    "lit-html/": "./vendor/lit-html/",
+    "@lit/reactive-element": "./vendor/@lit/reactive-element/reactive-element.js",
+    "@lit/reactive-element/": "./vendor/@lit/reactive-element/",
+    "@lit/context": "./vendor/@lit/context/index.js",
+    "@lit-labs/ssr-dom-shim": "./vendor/@lit-labs/ssr-dom-shim/index.js"
+  }
+}
+</script>
+<script type="module">
+  import './pkg/ripple/ripple.js';
+  import './pkg/button/filled-button.js';
+  import './pkg/switch/switch.js';
+</script>
+</body>
+</html>

@@ -1,0 +1,6 @@
+:HL["/md3e-try/_next/static/chunks/495f8d793ab59512.css","style"]
+:HL["/md3e-try/fonts/GoogleSansFlex.ttf","font",{"crossOrigin":"anonymous","type":"font/ttf"}]
+:HL["https://fontsapi.zeoseven.com/414/main/result.css","style"]
+:HL["https://fontsapi.zeoseven.com/415/main/result.css","style"]
+:HL["https://fontsapi.zeoseven.com/285/main/result.css","style"]
+0:{"buildId":"vDK0MOIgd4I5XHRlr9ZUQ","tree":{"name":"","paramType":null,"paramKey":"","hasRuntimePrefetch":false,"slots":{"children":{"name":"__PAGE__","paramType":null,"paramKey":"__PAGE__","hasRuntimePrefetch":false,"slots":null,"isRootLayout":false}},"isRootLayout":true},"staleTime":300}
