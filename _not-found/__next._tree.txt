@@ -1,7 +1,7 @@
-:HL["/md3e-try/_next/static/chunks/27572f0fcef267f3.css","style"]
+:HL["/md3e-try/_next/static/chunks/55d8ed4a58154175.css","style"]
 :HL["/md3e-try/fonts/GoogleSansFlex.ttf","font",{"crossOrigin":"anonymous","type":"font/ttf"}]
 :HL["https://fontsapi.zeoseven.com/414/main/result.css","style"]
 :HL["https://fontsapi.zeoseven.com/415/main/result.css","style"]
 :HL["https://fontsapi.zeoseven.com/285/main/result.css","style"]
 :HL["https://cdn.jsdelivr.net/npm/misans@5.0.0/lib/Normal/MiSansVF.min.css","style"]
-0:{"buildId":"0lrshDCjdRDtfjxq2ThTT","tree":{"name":"","paramType":null,"paramKey":"","hasRuntimePrefetch":false,"slots":{"children":{"name":"/_not-found","paramType":null,"paramKey":"/_not-found","hasRuntimePrefetch":false,"slots":{"children":{"name":"__PAGE__","paramType":null,"paramKey":"__PAGE__","hasRuntimePrefetch":false,"slots":null,"isRootLayout":false}},"isRootLayout":false}},"isRootLayout":true},"staleTime":300}
+0:{"buildId":"eLRu6Buy5oBBqjeBqipgn","tree":{"name":"","paramType":null,"paramKey":"","hasRuntimePrefetch":false,"slots":{"children":{"name":"/_not-found","paramType":null,"paramKey":"/_not-found","hasRuntimePrefetch":false,"slots":{"children":{"name":"__PAGE__","paramType":null,"paramKey":"__PAGE__","hasRuntimePrefetch":false,"slots":null,"isRootLayout":false}},"isRootLayout":false}},"isRootLayout":true},"staleTime":300}
