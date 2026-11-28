@@ -1,5 +1,7 @@
+// 第 29 轮：摘除 tailwindcss-animate 引用（第 27 轮已把包从依赖中移除，
+// 本配置为 Tailwind v4 dormant 文件——globals.css 无 @config 指令，此文件
+// 实际不参与构建；保留 import 会在全新 node_modules 下 tsc/构建期报 TS2307）。
 import type { Config } from "tailwindcss";
-import tailwindcssAnimate from "tailwindcss-animate";
 
 const config: Config = {
     darkMode: "class",
@@ -59,6 +61,6 @@ const config: Config = {
   		}
   	}
   },
-  plugins: [tailwindcssAnimate],
+  plugins: [],
 };
 export default config;

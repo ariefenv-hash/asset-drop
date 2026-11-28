@@ -2,19 +2,64 @@
 
 > 本仓为**资源中转仓**，与 `ariefenv-hash/md3` 完全隔离。md3 本侧已停工。
 > 归档内容**原样保留、未做任何修改**。
+> **第 31 轮（2026-11-28）归档滚动更新（合并轮）**：拉平并行实例分叉——以对方已推树为基底逐文件三方合并，合并入本侧「Checkbox/Radio 官方动画（MDC-Android 1.14.0 ASLD/AVD + AppCompat animated-selector）+ 还原基准声明落库 + 全盘去网页版核查 + PWA 化（manifest/sw/图标）+ Google Sans Flex wdth=25 最窄字形图标」，对方第 29/30 轮工作全部保留（9 引擎重考据/细节动画三件套/可变字体 6 枚）。取代第 30 轮归档。
 > **第 30 轮（2026-11-28）归档滚动更新**：细节动画三件套（SwipeRefresh 逐值移植 androidx SwipeRefreshLayout+CircularProgressDrawable / SpringLab 转译 androidx object Spring 劲度表 / CheckboxDraw 转译 MDC-Android AVD 三态动画，全部真实源码逐值取证）+ 可变字体多字体多轴化（4 英文 × 5 中文：新增 Roboto Flex 13 轴 / Recursive 5 轴 / Fraunces 4 轴 / MiSans VF / 资源圆体 CN VF 双轴子集内置；GSF opsz 考据修正 6→1–144）。取代第 29 轮归档。
 > **第 29 轮（2026-11-28）归档滚动更新**：9 个 aosp 引擎文件全量重考据——反推值清零（SystemUI 时长 3000/750、最大扩散 0.725/0.68 均查无源码依据，按真实调用方取值表修正），核对一致项补真实文件+行号出处；仓库更名 asset-drop → **md3e-try**（Pages 前缀随构建变量切至 /md3e-try）。取代第 28 轮归档（第 18/21/23/24/25/26/27/28 轮历史数据见本文件后半与 git 历史）。
 > **第 28 轮（2026-11-22）归档滚动更新**：开关小球勾叉字形修复（图标渲染器 inline style 压类名实根因 + 真机逐像素取证定档）+ 页尾新增「还原边界 · 使用须知」。
 > **第 27 轮（2026-11-22）归档滚动更新**：在承接第 22-26 轮基础上，完成全站去 npm 化（运行时依赖收敛到 react/react-dom/next 三个；lucide-react 卸载 → Material Symbols 官方路径数据内联自研图标模块；shadcn/Radix/Prisma 死代码出库）。
 
-## 一、两份原始归档（第 30 轮）
+## 一、两份原始归档（第 31 轮）
 
 | 文件 | 大小 | sha256 |
 |---|---|---|
-| `archives/aosp-ripple-port-web-src.zip` | 12,222,143 B | `eef0842de9a30a1bdcde7fa4a0c223149c12440568758f337b7864f95bfdcb7c` |
-| `archives/aosp-ripple-port-web-dist.zip` | 21,010,838 B | `0b52b27362a1aff4c4e05fa30627b6fa2e65c84ea0818fa97125ba12c5fcb312` |
+| `archives/aosp-ripple-port-web-src.zip` | 12,232,891 B | `26af0313bc80b2b1396a6d880aef5230ae41062a6ff6a2ff9776064dfe8c687e` |
+| `archives/aosp-ripple-port-web-dist.zip` | 21,131,636 B | `270eef5bc8d2efee21e32c342eb3f9654d1ee01a0af38fbd53dd75b4c570465a` |
 
-两份均通过 `zipfile.testzip()` 完整性校验（无损坏条目）；**三包同源同哈希**：dist 内嵌页脚 ZIP（`aosp-ripple-port-src.zip`）= 归档 src zip（字节级一致，本轮复验）。
+两份均通过 `zipfile.testzip()` 完整性校验（无损坏条目）；**三包同源同哈希**：dist 内嵌页脚 ZIP（`aosp-ripple-port-src.zip`）= 归档 src zip = `download/` 同名包（脚本断言校验）。第 31 轮 src 条目 2,600 = 本侧第 29 轮树 2,588 + 对方新增 12（三件套 demo×3 + springPresets + 字体×4 + evidence×4）；合并前从第 28 轮归档恢复 639 个被并行实例删减的对照区文件（official-md-ripple/pkg/ + tsconfig.check.json）。
+
+## 〇0、第 31 轮（合并轮）：拉平并行分叉 + Checkbox/Radio 官方动画 + PWA 化（2026-11-28）
+
+### A. 合并方法与落位（三方逐文件核对，双方工作零丢失）
+- 真基线 = 第 28 轮归档（/tmp/zipsrc 解包，2577 文件）；对 14 个共同差异文件逐一
+  三方哈希定位：7 个本侧未动 → 采用对方版本（4 引擎 + CurveAndMathPanel/
+  InteractiveLab/VariableFontPlayground）；4 个对方未动 → 保留本侧版本
+  （.gitignore / AospExpressiveSwitch / M3CoreComponentsGallery / tailwind.config）；
+  3 处双改手工合并：globals.css = 对方 --vf-en 字体变量重构 + 本侧尾部 181 行
+  Checkbox/Radio 动画节；layout.tsx = 对方 4 组 VF @font-face + MiSans 分片 link +
+  本侧 PWA metadata/viewport/PwaRegister；App.tsx = 对方三件套挂载 + 修正记录表
+  更新 + 本侧页尾还原基准声明文案。合并后 `tsc --noEmit` 零错误。
+- **仓库级还原基准声明补齐**（用户第 29 轮指令，对方树未写入）：README.md 新增
+  「还原基准声明（铁律 6）」章节 + PACKAGE-INFO.txt 首部声明段 + 页尾声明栏文案。
+
+### B. Checkbox / Radio 官方动画（本侧第 29 轮，Android 17 取证链合并入树）
+- Checkbox（MDC-Android 1.14.0 checkbox ASLD/AVD + motion tokens.xml）：入 = 盒/勾
+  scale 0.6→1.0（350ms · emphasized-decelerate 0.1,0.7,0.1,1）+ fillAlpha 50ms
+  linear + 勾 trimPathEnd 0→1（AOSP hwui VectorDrawable.cpp applyTrim 语义 =
+  SkPathMeasure 部分轮廓 + fill 隐式闭合，Web 端 rAF 逐帧重写 path d）；出 =
+  scale 1.0→0.6（150ms · emphasized-accelerate 0.3,0,0.8,0.2）+ 50ms 淡出；
+  勾↔减号 = pathData 形变 350ms；初始渲染静置（对齐 animated-selector 初绑语义）
+- Radio（M3 样式不覆写 android:button → 动画来自 AppCompat animated-selector/AVD）：
+  off→on 498ms 三段（点 0→0→1.5→1.0 过冲 + 环 1→0.5→0.9→1.0 + 描边 2→18→2 脉冲，
+  fos 0.4,0,0.2,1 / interp_0 0.4,0,0.4,1）；on→off 499ms 三段反向；几何闭环
+  btn_radio_{on,off}_mtrl.xml（viewport 32 · r=9/stroke 2 · 点 r=5）；is-armed 门控
+  修复加载误播闪点
+- AospExpressiveSwitch 小球按压改 Android 双向 100ms standard、位移 250ms
+  AccelerateDecelerate（摘除网页版独有过冲缓动 cubic-bezier(0.175,0.885,0.32,1.275)）
+- 全盘"去网页版"核查（第 29 轮实测）：移植代码零 import/零实现引用、网页版独有
+  键帧/类名 0 处
+
+### C. PWA 化 + 图标（本侧第 29 轮，合并入树）
+- manifest.webmanifest：全部相对 URL（./），md3e-try 子路径与根路径双形态自动正确
+  （本地 /md3e-try/ 子路径模拟冒烟全 200 实测）；sw.js：scope 自解析，导航
+  network-first + 离线回退缓存根，同源静态 SWR，跨源 CDN 不接管；PwaRegister.tsx
+  仅生产注册；layout metadata = manifest + 图标组 + appleWebApp + themeColor 亮暗
+- 图标：Google Sans Flex 最窄字形 **wdth=25**（fvar 轴最小值 25–151，instancer
+  静态实例 wght=700·ROND=100·opsz=144）「M3」黑字白底 + 涟漪触点装饰；
+  icon-512/192/32、maskable-512（安全区 161.9px ≤ 204.8px 断言）、apple-touch-180、
+  favicon.ico(16/32/48)、icon.svg/favicon.svg 同源矢量重建（scripts/r29_pwa_icons.py）
+- 端到端实测（合并树复跑）：tsc 零错误 · /md3e-try 前缀 NEXT_EXPORT 导出通过 ·
+  子路径模拟冒烟 10/10 全 200（首页/manifest/sw/图标/对照区/字体/页脚包）·
+  index.html 内联 /md3e-try/manifest.webmanifest ×2 · 三包同源同哈希 ✓
 
 ## 〇1、第 30 轮扩容（细节动画三件套 + 可变字体多字体多轴，2026-11-28）
 
@@ -110,8 +155,8 @@
 
 | 包 | ZIP 内条目 | 处理 |
 |---|---|---|
-| src | 2,579 文件 | 原始 ZIP 归档；**不再内嵌页脚源码包**（自引用排除，终止逐轮滚雪球） |
-| dist | 2,542 文件 | 原始 ZIP 归档；内容即 gh-pages 全量（第 29 轮 ZIP 11,607,214 B，内嵌页脚 ZIP 与 src zip 同哈希） |
+| src | 2,600 文件 | 原始 ZIP 归档；**不再内嵌页脚源码包**（自引用排除，终止逐轮滚雪球） |
+| dist | 2,557 文件 | 原始 ZIP 归档；内容即 gh-pages 全量（第 31 轮 ZIP 21,131,636 B，解压后约 31 MB，内嵌页脚 ZIP 与 src zip 同哈希；PWA 可安装） |
 
 - **dist 形态变化说明**：第 18 轮 dist 为 `bun run build` 的 **standalone 产物**（93 MB / 4,553 文件，含 73 MB node_modules），仅适合容器内 `bun server.js` 运行，GitHub Pages 无法托管。第 21 轮起 dist 更换为 **`NEXT_EXPORT=1` 官方静态导出**（纯静态无 node_modules），与 gh-pages 分支同源同哈希路径规则，解压即站点（第 22-28 轮前缀 `/asset-drop`，第 29 轮起随仓库更名切至 `/md3e-try`）；standalone 形态可随时由 src 包复现。第 22 轮 dist 增至 11.5 MB，主因 `official-md-ripple/vendor/`（lit 3.3.2 运行时 7 包）首次随包分发。
 

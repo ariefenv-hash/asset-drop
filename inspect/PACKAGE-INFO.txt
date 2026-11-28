@@ -1,47 +1,77 @@
 AOSP 涟漪移植展示 · 打包说明
 ================================================
-构建时间：2026-11-22（第 28 轮）
-基线：AOSP Android 17 (android-17.0.0_r1) · @material/web 2.5.0（pkg/ 原文内联运行）· MDC-Android 1.14.0
+构建时间：2026-11-28（第 31 轮 · 合并轮）
+基线：AOSP main 分支（联网取证，2026-11）· @material/web 2.5.0（pkg/ 原文内联运行，仅对照展示）
+· MDC-Android 1.14.0（tag 联网逐值核对 + AAR 离线解包）· androidx graphics-shapes /
+  swiperefreshlayout / compose animation-core（androidx-main）
 · Monet CoreSpec = packages/SystemUI/monet ColorScheme.kt（aosp-mirror android-13.0.0_r1）
+
+还原基准声明（铁律 6，长期有效）
+------------------------------------------------
+本包还原基准 = **AOSP / Android 17 对应源码的 Kotlin、Java 与 XML 资源文件**
+（AOSP framework / SystemUI / MDC-Android / androidx Compose material3），
+**不是 Material 网页版（@material/web）的二次改造**——网页版实现有自己的取舍，
+不作为还原依据、不引入实现；dist 里的 official-md-ripple/ 目录仅为页内
+「官方对照」区展示用素材。取值与网页版相同时必须另找 Android 侧出处证明。
+Android 侧两套官方缓动令牌（勿混淆，均系 Android 源码）：MDC-Android 1.14.0
+View 体系 tokens（decelerate 0.1,0.7,0.1,1 / accelerate 0.3,0,0.8,0.2）与
+androidx Compose material3 Expressive MotionTokens（0.05,0.7,0.1,1 /
+0.3,0,0.8,0.15），按被移植组件的源库取值，出处见各组件注释与 WORKLOG。
 
 一、本包内容
 ------------------------------------------------
 1) aosp-ripple-port-web-src.zip —— Next.js 预览工程源码（可复现构建）
-   - src/        9 个 aosp 引擎文件 + 15 个组件文件（含自研图标模块 icons/）
-                 + 官方对照 iframe
-   - public/     official-md-ripple（pkg/ 原文 + vendor/ lit 3.3.2）、字体、页脚内嵌源码包
-   - evidence/   MDC-Android 1.14.0 官方 AAR + tokens 取证转储
+   - src/        9 个 aosp 引擎文件 + springPresets + 26 个组件文件（含自研
+                 图标模块 icons/、PWA 注册组件 PwaRegister、细节动画三件套
+                 SwipeRefresh/SpringLab/CheckboxDraw）+ 官方对照 iframe
+   - public/     official-md-ripple（pkg/ 原文 + vendor/ lit 3.3.2）、字体 6 枚
+                 （GoogleSansFlex + roboto-flex + recursive + fraunces +
+                 ResourceHanRoundedCN-VF-Subset）、PWA（manifest/sw/icons/）、
+                 页脚内嵌源码包
+   - evidence/   MDC-Android 1.14.0 官方 AAR + tokens 取证转储 +
+                 round30-evidence.md（可变字体 fvar 逐轴实测 + 动画真值档案）
    - 根配置      package.json / next.config.ts / tsconfig / postcss / eslint / bun.lock / .gitignore
 2) aosp-ripple-port-web-dist.zip —— GitHub Pages 静态导出产物
-   NEXT_EXPORT=1 NEXT_BASE_PATH=/asset-drop 生成（out/），解压即站点；
-   纯静态、无 node_modules，与 gh-pages 分支同源。
+   NEXT_EXPORT=1 NEXT_BASE_PATH=/md3e-try 生成（out/），解压即站点；
+   纯静态、无 node_modules，与 gh-pages 分支同源；PWA 可安装
+   （standalone 根路径与 Pages 子路径双形态均正确）。
 
-二、第 28 轮变更（开关小球勾叉修复 + 页尾还原边界说明）
+二、第 31 轮变更（合并轮：拉平并行实例分叉，双方工作全部保留）
 ------------------------------------------------
-- 图标渲染器尺寸语义修复（用户复核"开关小球勾叉比原系统大一圈"实根因）：
-  icons/index.tsx 的 size 原先经 inline style（width/height: 24px 默认值）
-  写入，内联样式优先级高于 Tailwind 尺寸类——第 27 轮换装后全站 6 处靠
-  类名定尺寸的图标（开关小球勾叉 h-4、页头明暗切换与源码对照复制/成功
-  h-3.5、暗色演示 Sun h-5）实际全被撑成 24px。现改 width/height 属性写入
-  （lucide 同款语义）：类名/样式可正常覆盖，无类名时仍为默认 24dp
-- 字形档位真机取证（960 网格逐字计算 + Android 16 Expressive 系统设置
-  截图逐像素实测）：X 宽/小球直径 = 0.355~0.387 ↔ 官方默认 close 字形
-  @16dp 图标盒 = 8.77/24 = 0.365 吻合；check_small/close_small 小号变体
-  （6.13/24 = 0.256）明显小于实机——小球维持官方默认 check/close 字形，
-  图标盒保持官方 spec 16dp（m3.material.io switch specs：icon size 16dp
-  选中/未选中同值）；lucide 时代遗留 stroke-[2.75/2.5] 笔画类清除
-  （对实心剪影本就无效）
-- icons 模块补录 check_small/close_small（google/material-design-icons
-  symbols/web/<name>/materialsymbolsrounded/<name>_fill1_24px.svg 原样内联，
-  60→62 枚）作为官方小号光学变体备用，取证结论如实记录于模块头注
-- 页尾「关于本项目 · 项目性质说明」三栏扩四栏：新增「还原边界 · 使用须知」
-  （用户要求）——本仓库仅展示从系统源码中可找到、可考据的部分进行还原，
-  实现可能有所取舍，部分细节未能与主代码一一对应（移植到网页不可避免）；
-  使用时请注意这些组件只是基础，后续动画还需进一步补充完善
+- 背景：并行实例已推「第 29 轮（9 引擎全量重考据：反推值清零，SystemUI 时长改
+  真实调用方取值表 1750/1500/800ms，最大扩散改 setMaxSize 调用方语义）」与
+  「第 30 轮（细节动画三件套 SwipeRefresh/SpringLab/CheckboxDraw + 可变字体
+  扩展 6 枚）」至 main/gh-pages（仓改名 asset-drop → md3e-try）；本侧含未推的
+  「Checkbox/Radio 官方动画 + 还原基准声明落库 + 去网页版核查 + PWA 化 +
+  Google Sans Flex wdth=25 图标」。本轮以对方已推送树为基底、以第 28 轮归档为
+  真基线做逐文件三方合并（14 个共同差异文件逐一定位归属，三处双改手工合并），
+  双方工作零丢失。
+- 【合并入】本侧第 29 轮工作：
+  · Checkbox 官方动画（MDC-Android 1.14.0 checkbox ASLD/AVD）：unchecked→checked
+    = 盒/勾 scale 0.6→1.0（350ms · emphasized-decelerate 0.1,0.7,0.1,1）+
+    fillAlpha 50ms linear + 勾 trimPathEnd 0→1（AOSP hwui applyTrim 语义，rAF
+    部分轮廓重建）；checked→unchecked = scale 1.0→0.6（150ms · accelerate
+    0.3,0,0.8,0.2）+ 50ms 淡出；勾↔减号 = pathData 形变 350ms；初始渲染静置
+  · Radio 官方动画（AppCompat animated-selector → AVD）：off→on 498ms 三段
+    （点 0→0→1.5→1.0 过冲 + 环 1→0.5→0.9→1.0 + 描边 2→18→2 脉冲）；on→off
+    499ms 三段反向；几何闭环 btn_radio_{on,off}_mtrl.xml；is-armed 门控
+  · AospExpressiveSwitch 小球按压 Android 双向 100ms standard、位移 250ms
+    AccelerateDecelerate（摘除网页版独有过冲缓动）
+  · 还原基准声明落库：WORKLOG 铁律 6 + README.md + pushctx 文档 + 页尾声明栏
+  · PWA 化：manifest.webmanifest（全相对 URL ./）· sw.js（scope 自解析，导航
+    network-first + 静态 SWR，跨源 CDN 不接管）· PwaRegister.tsx（仅生产注册）·
+    layout metadata（图标组 + appleWebApp + themeColor 亮暗双档）
+  · PWA 图标：Google Sans Flex 最窄字形 wdth=25（fvar 轴最小值）「M3」黑字 +
+    涟漪触点装饰（icon-512/192/32、maskable-512 安全区断言、apple-touch-180、
+    favicon.ico(16/32/48)、icon.svg 同源矢量重建；scripts/r29_pwa_icons.py）
+- 【承接对方】第 29/30 轮全部工作见其 MANIFEST/WORKLOG 记录（9 引擎重考据 /
+  细节动画三件套 / 可变字体 6 枚 / MiSans VF CDN）
+- 打包前从第 28 轮归档恢复 639 个被并行实例删减的对照区文件
+  （public/official-md-ripple/pkg/ 30+ 模块 + tsconfig.check.json）
 
 三、运行
 ------------------------------------------------
   bun install && bun run dev          # http://localhost:3000
-  NEXT_EXPORT=1 NEXT_BASE_PATH=/asset-drop bun run build   # 静态导出 out/
+  NEXT_EXPORT=1 NEXT_BASE_PATH=/md3e-try bun run build   # 静态导出 out/
   （注：next.config.ts build 脚本尾部的 cp 步骤仅 standalone 形态需要，
    导出形态出现 cp 报错可忽略——out/ 已生成）

@@ -1,97 +1,77 @@
 AOSP 涟漪移植展示 · 打包说明
 ================================================
-构建时间：2026-11-28（第 30 轮）
-基线：AOSP main 分支（联网取证，2026-11）· @material/web 2.5.0（pkg/ 原文内联运行）
-· MDC-Android 1.14.0（tag 联网逐值核对 + AAR 离线解包）· androidx graphics-shapes
-（androidx-main）· androidx swiperefreshlayout / compose animation-core（androidx-main）
-· Monet CoreSpec = packages/SystemUI/monet ColorScheme.kt（aosp-mirror android-13.0.0_r1，
-  第 25 轮联网核对；本仓 utils/mcu 为同源 Material Color Utilities 移植）
+构建时间：2026-11-28（第 31 轮 · 合并轮）
+基线：AOSP main 分支（联网取证，2026-11）· @material/web 2.5.0（pkg/ 原文内联运行，仅对照展示）
+· MDC-Android 1.14.0（tag 联网逐值核对 + AAR 离线解包）· androidx graphics-shapes /
+  swiperefreshlayout / compose animation-core（androidx-main）
+· Monet CoreSpec = packages/SystemUI/monet ColorScheme.kt（aosp-mirror android-13.0.0_r1）
+
+还原基准声明（铁律 6，长期有效）
+------------------------------------------------
+本包还原基准 = **AOSP / Android 17 对应源码的 Kotlin、Java 与 XML 资源文件**
+（AOSP framework / SystemUI / MDC-Android / androidx Compose material3），
+**不是 Material 网页版（@material/web）的二次改造**——网页版实现有自己的取舍，
+不作为还原依据、不引入实现；dist 里的 official-md-ripple/ 目录仅为页内
+「官方对照」区展示用素材。取值与网页版相同时必须另找 Android 侧出处证明。
+Android 侧两套官方缓动令牌（勿混淆，均系 Android 源码）：MDC-Android 1.14.0
+View 体系 tokens（decelerate 0.1,0.7,0.1,1 / accelerate 0.3,0,0.8,0.2）与
+androidx Compose material3 Expressive MotionTokens（0.05,0.7,0.1,1 /
+0.3,0,0.8,0.15），按被移植组件的源库取值，出处见各组件注释与 WORKLOG。
 
 一、本包内容
 ------------------------------------------------
 1) aosp-ripple-port-web-src.zip —— Next.js 预览工程源码（可复现构建）
-   - src/        9 个 aosp 引擎文件 + 18 个组件文件（含自研图标模块 icons/、
-                 第 30 轮新增 SwipeRefreshDemo/SpringLabDemo/CheckboxDrawDemo）
-                 + 官方对照 iframe
-   - public/     official-md-ripple（pkg/ 原文 + vendor/ lit 3.3.2）、字体
-                 （第 30 轮起 6 枚：GoogleSansFlex + roboto-flex + recursive +
-                 fraunces + ResourceHanRoundedCN-VF-Subset）、页脚内嵌源码包
+   - src/        9 个 aosp 引擎文件 + springPresets + 26 个组件文件（含自研
+                 图标模块 icons/、PWA 注册组件 PwaRegister、细节动画三件套
+                 SwipeRefresh/SpringLab/CheckboxDraw）+ 官方对照 iframe
+   - public/     official-md-ripple（pkg/ 原文 + vendor/ lit 3.3.2）、字体 6 枚
+                 （GoogleSansFlex + roboto-flex + recursive + fraunces +
+                 ResourceHanRoundedCN-VF-Subset）、PWA（manifest/sw/icons/）、
+                 页脚内嵌源码包
    - evidence/   MDC-Android 1.14.0 官方 AAR + tokens 取证转储 +
                  round30-evidence.md（可变字体 fvar 逐轴实测 + 动画真值档案）
-   - 根配置      package.json / next.config.ts / tsconfig / postcss / eslint /
-                 bun.lock / .gitignore
+   - 根配置      package.json / next.config.ts / tsconfig / postcss / eslint / bun.lock / .gitignore
 2) aosp-ripple-port-web-dist.zip —— GitHub Pages 静态导出产物
    NEXT_EXPORT=1 NEXT_BASE_PATH=/md3e-try 生成（out/），解压即站点；
-   纯静态、无 node_modules，与 gh-pages 分支同源。
-   （仓库 md3e-try：ariefenv-hash/md3e-try，站点
-   https://ariefenv-hash.github.io/md3e-try/ ；资源路径前缀随构建变量切换）
+   纯静态、无 node_modules，与 gh-pages 分支同源；PWA 可安装
+   （standalone 根路径与 Pages 子路径双形态均正确）。
 
-二、第 30 轮变更（细节动画扩容 + 可变字体多字体多轴化）
+二、第 31 轮变更（合并轮：拉平并行实例分叉，双方工作全部保留）
 ------------------------------------------------
-用户指令：①添加更多细节动画丰富完善仓库；②可变字体网络搜索更多选择，
-中文可变字体尽可能找到多轴的并加入。本轮全部落真实源码/真实文件取证：
+- 背景：并行实例已推「第 29 轮（9 引擎全量重考据：反推值清零，SystemUI 时长改
+  真实调用方取值表 1750/1500/800ms，最大扩散改 setMaxSize 调用方语义）」与
+  「第 30 轮（细节动画三件套 SwipeRefresh/SpringLab/CheckboxDraw + 可变字体
+  扩展 6 枚）」至 main/gh-pages（仓改名 asset-drop → md3e-try）；本侧含未推的
+  「Checkbox/Radio 官方动画 + 还原基准声明落库 + 去网页版核查 + PWA 化 +
+  Google Sans Flex wdth=25 图标」。本轮以对方已推送树为基底、以第 28 轮归档为
+  真基线做逐文件三方合并（14 个共同差异文件逐一定位归属，三处双改手工合并），
+  双方工作零丢失。
+- 【合并入】本侧第 29 轮工作：
+  · Checkbox 官方动画（MDC-Android 1.14.0 checkbox ASLD/AVD）：unchecked→checked
+    = 盒/勾 scale 0.6→1.0（350ms · emphasized-decelerate 0.1,0.7,0.1,1）+
+    fillAlpha 50ms linear + 勾 trimPathEnd 0→1（AOSP hwui applyTrim 语义，rAF
+    部分轮廓重建）；checked→unchecked = scale 1.0→0.6（150ms · accelerate
+    0.3,0,0.8,0.2）+ 50ms 淡出；勾↔减号 = pathData 形变 350ms；初始渲染静置
+  · Radio 官方动画（AppCompat animated-selector → AVD）：off→on 498ms 三段
+    （点 0→0→1.5→1.0 过冲 + 环 1→0.5→0.9→1.0 + 描边 2→18→2 脉冲）；on→off
+    499ms 三段反向；几何闭环 btn_radio_{on,off}_mtrl.xml；is-armed 门控
+  · AospExpressiveSwitch 小球按压 Android 双向 100ms standard、位移 250ms
+    AccelerateDecelerate（摘除网页版独有过冲缓动）
+  · 还原基准声明落库：WORKLOG 铁律 6 + README.md + pushctx 文档 + 页尾声明栏
+  · PWA 化：manifest.webmanifest（全相对 URL ./）· sw.js（scope 自解析，导航
+    network-first + 静态 SWR，跨源 CDN 不接管）· PwaRegister.tsx（仅生产注册）·
+    layout metadata（图标组 + appleWebApp + themeColor 亮暗双档）
+  · PWA 图标：Google Sans Flex 最窄字形 wdth=25（fvar 轴最小值）「M3」黑字 +
+    涟漪触点装饰（icon-512/192/32、maskable-512 安全区断言、apple-touch-180、
+    favicon.ico(16/32/48)、icon.svg 同源矢量重建；scripts/r29_pwa_icons.py）
+- 【承接对方】第 29/30 轮全部工作见其 MANIFEST/WORKLOG 记录（9 引擎重考据 /
+  细节动画三件套 / 可变字体 6 枚 / MiSans VF CDN）
+- 打包前从第 28 轮归档恢复 639 个被并行实例删减的对照区文件
+  （public/official-md-ripple/pkg/ 30+ 模块 + tsconfig.check.json）
 
-A. 可变字体扩展（VariableFontPlayground 多字体多轴化重构）
-- 英文 4 枚（本地内置，google/fonts ofl 原文件，fontTools fvar 逐轴实测）：
-  Google Sans Flex 5 轴（wght 1-1000/opsz 1-144/wdth 25-151/ROND 0-100/slnt -10-0；
-  ※ 考据修正：旧实验室硬编码 opsz 6-144/def 36，实测 1-144/def 18，第 30 轮改正）、
-  Roboto Flex 13 轴（GRAD/XOPQ/YOPQ/XTRA/YTUC/YTLC/YTAS/YTDE/YTFI 等 YT* 全家）、
-  Recursive 5 轴（MONO/CASL/CRSV/slnt/wght，64 命名实例）、Fraunces 4 轴
-  （opsz/SOFT/WONK；wght 100-900 且 def=max=900，官方默认实例即 Black）
-- 中文 5 枚：
-  文渊圆体/文渊宋体/思源宋体（zeoseven fontsapi 414/415/285，第 20 轮原方案保留）、
-  MiSans VF（小米官方 VF；jsDelivr npm misans@5.0.0 分片 CSS；wght 150-700(def 330)
-  为字体内部刻度，Thin=150…Heavy=700，与 web 标准刻度不同——如实标注）、
-  资源圆体 CN VF（Resource Han Rounded CN VF v1.910，OFL，思源黑体衍生；
-  wght 200-900(def 200) + ROND 0-100(def 100) 双轴、33 命名实例——本站第一枚
-  多轴中文可变字体；65MB CFF2 原件经 fontTools 子集化（GB2312 一级 3755 字 +
-  ASCII + 常用标点 = 3913 字形）为 2.4MB woff2 本地内置 public/fonts/）
-- 考据排除记录（如实留档）：霞鹜文楷 v1.530 官方仅 3 静态字重（axes=[]，无 VF）；
-  OPPO Sans 可变字体仅存于 ColorOS 系统内、官网无 VF 下载；阿里巴巴普惠体 3.0
-  仅静态字重家族
-- 工程改动：layout.tsx 新增 4 组 @font-face（轴范围全部 fvar 实测）+ MiSans
-  分片 CSS link；globals.css 混排栈改 var(--vf-en) 前导（新增变量）；
-  VariableFontPlayground 重构为英/中两排选择器 + 动态轴滑块（按选中字体 fvar
-  生成）+ wght 交集区间钳位（中英轴范围交集诚实呈现）+ 混搭预设扩至 7 条 +
-  "应用到全站"支持 --vf-en 持久化；混排机制不变（font-weight 中英联动 wght，
-  专属轴走 font-variation-settings）
-
-B. 细节动画三件套（新增组件，全部真实源码转译，出处见各组件头注）
-1) SwipeRefreshDemo —— androidx SwipeRefreshLayout（1454 行）+ CircularProgressDrawable
-   逐值移植：DRAG_RATE 0.5 / 触发线 64dp / 圆径 40·56dp / 回收 200ms /
-   起始透明度 76 / 减速插值器 factor 2；环动画 1332ms 单周期（弧长 0.01-0.8 前后半
-   FastOutSlowIn、环自转 0.21、组旋转 216°/圈、SHRINK@0.5、COLOR_CHANGE@0.75）、
-   CENTER_RADIUS 7.5/11 · STROKE 2.5/3 · ARROW 10×5/12×6 · COLORS={BLACK}；
-   诚实边界：VelocityTracker 抛掷判速未移植（Web 以位移判据等价）、箭头
-   arrowScale 逐帧微调未复刻（保留 0.3 显隐判据）
-2) SpringLabDemo —— androidx compose `object Spring` 劲度/阻尼预设实验室
-   （VectorizedAnimationSpec.kt L835-880：StiffnessHigh 10000 / Medium 1500（spring()
-   默认）/ MediumLow 400（进退场默认）/ Low 200 / VeryLow 50；DampingRatioHighBouncy
-   0.2 / MediumBouncy 0.5（默认）/ LowBouncy 0.75 / NoBouncy 1（默认）；
-   DefaultDisplacementThreshold 0.01）；物理方程 = SpringSimulation.kt L62-68
-   （accel = -k·x - c·v，c = 2·√k·ζ），复用引擎 spring.ts 精确步进；
-   拖拽浮子/轻弹（初速 -1400px/s）观察回弹手感，拖尾点迹可视化过冲振荡
-3) CheckboxDrawDemo —— MDC-Android 1.14.0 Checkbox 三态图标动画（AAR 离线取证）：
-   勾形路径 M14,18.2…20.6,11.6z / 横线 M13.4,15…21,15z（32×32 viewport，
-   values.xml string 原文）；unchecked→checked = scale 0.6→1 @350ms
-   emphasizedDecelerate(0.1,0.7,0.1,1) + trimPathEnd 0→1；checked→unchecked =
-   scale 1→0.6 @150ms emphasizedAccelerate(0.3,0,0.8,0.2) + fillAlpha 1→0 @50ms
-   linear；半选 = pathData 勾↔横线形变 @350ms（Web 端 WAAPI d 插值）；
-   时长 token short1=50/short3=150/medium3=350（AAR values.xml integer）
-- 新增 evidence/round30-evidence.md：6 枚字体 fvar 逐轴档案 + androidx Spring/
-  SwipeRefresh/CPD 常量行号档案 + checkbox AVD 提取记录
-
-三、第 29 轮及更早（全量重考据：反推值清零）
-------------------------------------------------
-9 个 aosp 引擎文件全量重考据——SystemUI 时长 3000/750 → 真实取值表
-（RippleView 1750 / MediaControlViewBinder 1500 / AuthRippleController 800）；
-最大扩散 0.725/0.68 → setMaxSize 调用方真实语义；核对一致项全部落真实文件+行号
-（MDC 1.14.0 tag / androidx-main / AOSP main 联网取证）。完整清单见 MANIFEST.md
-与 git 历史（第 18-29 轮逐轮归档）。
-
-四、运行
+三、运行
 ------------------------------------------------
   bun install && bun run dev          # http://localhost:3000
-  NEXT_EXPORT=1 NEXT_BASE_PATH=/md3e-try bunx next build   # 静态导出 out/
-  （注：package.json build 脚本尾部的 cp 步骤仅 standalone 形态需要，
+  NEXT_EXPORT=1 NEXT_BASE_PATH=/md3e-try bun run build   # 静态导出 out/
+  （注：next.config.ts build 脚本尾部的 cp 步骤仅 standalone 形态需要，
    导出形态出现 cp 报错可忽略——out/ 已生成）

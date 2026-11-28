@@ -3,12 +3,54 @@
 独立仓库，与 `ariefenv-hash/md3` 完全隔离；md3 本侧已停工，不再改动任何文件与分支。
 **2026-11-28 起仓库更名：`ariefenv-hash/asset-drop` → `ariefenv-hash/md3e-try`**（GitHub 自动重定向旧地址；Pages 站点迁至 https://ariefenv-hash.github.io/md3e-try/ ，dist 已按 `/md3e-try` 前缀重新构建）。
 
-## 已归档（第 30 轮 · 2026-11-28 滚动更新）
+## 还原基准声明（铁律 6 · 用户 2026-11-28 指令，长期有效）
 
-- `archives/aosp-ripple-port-web-src.zip` — AOSP 涟漪移植展示 **第 30 轮** Next.js 工程源码（细节动画三件套 + 可变字体多字体多轴）
-- `archives/aosp-ripple-port-web-dist.zip` — 对应 **GitHub Pages 静态导出产物**（`NEXT_EXPORT=1 NEXT_BASE_PATH=/md3e-try`，资源路径含 `/md3e-try` 前缀，解压即站点）
+> 「声明不是复刻网页版，网页版也有取舍，请直接按照 AOSP，安卓 17 版本的源码来
+> 按照 kt 或者 Java 文件来，而不是 web 版的二次改造。」
+
+- 本仓归档内容（src zip / dist zip）的还原基准为 **AOSP / Android 17 对应源码的
+  Kotlin、Java 与 XML 资源文件**（AOSP framework / SystemUI / MDC-Android /
+  androidx Compose material3），**不是 @material/web 网页版的二次改造**；
+  dist 里的 `official-md-ripple/` 目录仅为页内「官方对照」区展示用素材。
+- Android 侧两套官方缓动令牌（勿混淆，均系 Android 源码）：MDC-Android 1.14.0
+  View 体系 tokens（decelerate 0.1,0.7,0.1,1 / accelerate 0.3,0,0.8,0.2）与
+  androidx Compose material3 Expressive MotionTokens（0.05,0.7,0.1,1 /
+  0.3,0,0.8,0.15），按被移植组件的源库取值，出处见各组件注释与 WORKLOG。
+- 后续使用 / 二次开发本归档时请先读本节与 `PACKAGE-INFO.txt` 首部同名声明，
+  防止新环境把网页版取舍误当还原基准。
+
+## 已归档（第 31 轮 · 2026-11-28 滚动更新，合并轮）
+
+- `archives/aosp-ripple-port-web-src.zip` — AOSP 涟漪移植展示 **第 31 轮** Next.js 工程源码（合并轮：对方第 29/30 轮工作 + 本侧 Checkbox/Radio 官方动画 / PWA / wdth=25 图标，双方工作零丢失）
+- `archives/aosp-ripple-port-web-dist.zip` — 对应 **GitHub Pages 静态导出产物**（`NEXT_EXPORT=1 NEXT_BASE_PATH=/md3e-try`，资源路径含 `/md3e-try` 前缀，解压即站点；PWA 可安装）
 
 完整清单、sha256、dist 形态变化说明与逐条考据结论见 **MANIFEST.md**。
+
+## 第 31 轮要点（合并轮：拉平并行实例分叉，双方工作全部保留）
+
+- **合并方法**：真基线 = 第 28 轮归档逐文件三方哈希比对；14 个共同差异文件逐一
+  定位归属（7 采用对方 / 4 保留本侧 / 3 处双改手工合并：globals.css、layout.tsx、
+  App.tsx），双方工作零丢失；合并后 tsc 零错误、/md3e-try 子路径模拟冒烟全 200
+- **合并入（本侧第 29 轮工作）**：
+  - **Checkbox 官方动画**（MDC-Android 1.14.0 checkbox ASLD/AVD）：入 = 盒/勾
+    scale 0.6→1.0（350ms · emphasized-decelerate）+ fillAlpha 50ms linear + 勾
+    trimPathEnd 0→1（AOSP hwui applyTrim 语义，rAF 部分轮廓重建）；出 = scale
+    1.0→0.6（150ms · accelerate）+ 50ms 淡出；勾↔减号 = pathData 形变；初始静置
+  - **Radio 官方动画**（AppCompat animated-selector/AVD）：off→on 498ms 三段
+    （点 0→0→1.5→1.0 过冲 + 环脉冲 2→18→2 + 环 scale）；on→off 499ms 反向；
+    几何闭环 btn_radio_{on,off}_mtrl.xml；is-armed 门控防加载误播
+  - **还原基准声明落库**：WORKLOG 铁律 6 + 仓库根 README（本轮补齐——对方树
+    未写入）+ pushctx 文档 + 页尾声明栏
+  - **全盘去网页版核查**：移植代码零 import/零实现引用；AospExpressiveSwitch
+    小球按压 Android 双向 100ms standard、位移 250ms AccelerateDecelerate
+  - **PWA 化**：manifest（全相对 URL）/ sw.js（scope 自解析 + 离线回退）/
+    PwaRegister（仅生产）/ layout metadata（图标组 + appleWebApp + themeColor）
+  - **PWA 图标**：Google Sans Flex 最窄字形 **wdth=25**（fvar 轴最小值）「M3」
+    黑字 + 涟漪触点装饰（icon 全家 + favicon.ico + icon.svg 同源矢量重建）
+- **打包前修复**：从第 28 轮归档恢复 639 个被并行实例删减的对照区文件
+  （public/official-md-ripple/pkg/ 30+ 模块 + tsconfig.check.json）
+- 端到端实测：tsc 零错误 · /md3e-try 前缀静态导出通过 · 子路径模拟冒烟 10/10 全 200
+  · 三包同源同哈希 ✓（对方第 30 轮实测项——三件套全链路/字体三通道——未受合并影响）
 
 ## 第 30 轮要点（细节动画扩容 + 可变字体多字体多轴，全部真实源码/真实文件取证）
 
