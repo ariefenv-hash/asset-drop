@@ -128,7 +128,7 @@ main + blobless sparse clone 全仓 grep），结论：
 
 ## 线上预览
 
-**https://ariefenv-hash.github.io/md3e-try/** （gh-pages 分支；2026-11-28 随仓库更名迁移，旧地址 https://ariefenv-hash.github.io/asset-drop/ 由 GitHub 自动重定向）
+**https://ariefenv-hash.github.io/md3e-try/** （gh-pages 分支；2026-11-28 随仓库更名迁移。注：github.com 仓库地址 https://github.com/ariefenv-hash/asset-drop 由 GitHub 自动重定向，但 Pages 子路径 /asset-drop/ 不重定向、直接 404——站点请改用 md3e-try 新地址）
 - 第 28 轮（含第 22-27 轮全部修复）已随本次推送同步上线：开关小球勾叉恢复官方
   16dp 图标盒（修复第 27 轮图标渲染器 inline style 尺寸回归，真机逐像素取证
   定档）、页尾新增「还原边界 · 使用须知」栏，均可在线验证
