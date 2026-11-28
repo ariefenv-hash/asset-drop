@@ -208,6 +208,10 @@ main + blobless sparse clone 全仓 grep），结论：
 ## 线上预览
 
 **https://ariefenv-hash.github.io/md3e-try/** （gh-pages 分支；2026-11-28 随仓库更名迁移。注：github.com 仓库地址 https://github.com/ariefenv-hash/asset-drop 由 GitHub 自动重定向，但 Pages 子路径 /asset-drop/ 不重定向、直接 404——站点请改用 md3e-try 新地址）
+- 第 31 轮已随本次推送同步上线：**Checkbox/Radio 官方动画**（MDC-Android 1.14.0
+  ASLD/AVD + AppCompat animated-selector）· **PWA 可安装**（manifest / sw.js 离线回退 /
+  Google Sans Flex wdth=25 图标全家 / favicon）· 页尾还原基准声明栏；第 30 轮细节
+  动画三件套与可变字体实验室（4 英文 × 5 中文多字体多轴）保留在线
 - 第 30 轮已随本次推送同步上线：细节动画三件套（下拉刷新/弹簧实验室/checkbox
   三态）与可变字体实验室 4 英文 × 5 中文多字体多轴（含资源圆体双轴），均可在线验证
 - 第 28-29 轮（含全部修复）同线在线：反推值清零（涟漪时长三档真实值）、开关小球
