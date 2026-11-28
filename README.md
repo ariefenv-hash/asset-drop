@@ -1,13 +1,44 @@
-# asset-drop · 资源文件中转仓
+# asset-drop（已更名 **md3e-try**）· 资源文件中转仓
 
-独立新仓库，与 `ariefenv-hash/md3` 完全隔离；md3 本侧已停工，不再改动任何文件与分支。
+独立仓库，与 `ariefenv-hash/md3` 完全隔离；md3 本侧已停工，不再改动任何文件与分支。
+**2026-11-28 起仓库更名：`ariefenv-hash/asset-drop` → `ariefenv-hash/md3e-try`**（GitHub 自动重定向旧地址；Pages 站点迁至 https://ariefenv-hash.github.io/md3e-try/ ，dist 已按 `/md3e-try` 前缀重新构建）。
 
-## 已归档（第 28 轮 · 2026-11-22 滚动更新）
+## 已归档（第 29 轮 · 2026-11-28 滚动更新）
 
-- `archives/aosp-ripple-port-web-src.zip` — AOSP 涟漪移植展示 **第 28 轮** Next.js 工程源码
-- `archives/aosp-ripple-port-web-dist.zip` — 对应 **GitHub Pages 静态导出产物**（`NEXT_EXPORT=1 NEXT_BASE_PATH=/asset-drop`，资源路径含 `/asset-drop` 前缀，解压即站点）
+- `archives/aosp-ripple-port-web-src.zip` — AOSP 涟漪移植展示 **第 29 轮** Next.js 工程源码
+- `archives/aosp-ripple-port-web-dist.zip` — 对应 **GitHub Pages 静态导出产物**（`NEXT_EXPORT=1 NEXT_BASE_PATH=/md3e-try`，资源路径含 `/md3e-try` 前缀，解压即站点）
 
-完整清单、sha256、dist 形态变化说明与评估报告对照见 **MANIFEST.md**。
+完整清单、sha256、dist 形态变化说明与逐条考据结论见 **MANIFEST.md**。
+
+## 第 29 轮要点（全量重考据：反推值清零，真实源码位置全落档）
+
+用户指令：对 9 个 aosp 引擎文件做一次完整全量查找——凡此前通过其他用法反推、
+或使用近似值的位置，重新找到真实源码并做进去。本轮逐文件联网取证（MDC-Android
+1.14.0 tag / androidx-androidx androidx-main / aosp-mirror platform_frameworks_base
+main + blobless sparse clone 全仓 grep），结论：
+
+- **核对后逐位一致（原样保留，头注补真实文件+行号）**：
+  materialShapes 七形顶点/顺序/动画（MDC MaterialShapes.java + LoadingIndicator
+  三件套，650ms · 旋转 50°+90° · 弹簧 200/0.6）、androidx graphics-shapes 全部
+  公式与 epsilon（circularArc/RoundedCorner/Morph match/LengthMeasurer segments=3/
+  1e-4·1e-6）、framework 涟漪全部常量（450/375/7000/214/×2.3/2.1/MAX_RIPPLES 10/
+  0x8dffffff/hypot 目标半径）、SystemUI AGSL GLSL 逐字、EdgeEffect/StretchEffect
+  拉伸全部常量（24.657/0.98/200/8.0/0.016×2/0.33/13/0.01/0.001/0.7）、M3 弹簧
+  三组 token（1400/0.9 · 800/0.6 · 200/0.6）
+- **反推值修正（实质变更）**：
+  1. SystemUI 涟漪时长：旧版自创 3000ms（"DEFAULT_RIPPLE_EFFECT_DURATION"——
+     AOSP main 全仓检索无此常量）与 750ms 移除 → 真实取值表 RippleView 默认
+     1750ms（充电涟漪）/ 媒体触控 1500ms（MediaControlViewBinder）/ 解锁 800ms
+     （AuthRippleController）；实验台时长切换改真实三档并标注出处
+  2. SystemUI 最大扩散：旧版自创 max(w,h)×0.725 与 ellipse 0.68（全仓检索均无）
+     → setMaxSize 调用方真实语义：圆 = 充电涟漪直径 max(w,h)×2（终态半径=视口
+     最大边，铺满屏幕）；box/椭圆无 AOSP 调用方 → 按视图适配并如实标注
+  3. shaders.ts 展示块 uniform 映射归属拆正（RippleShader.java L138-140/L194-199/
+     L157-183，不再误挂 RippleAnimationSession.java）
+  4. package.json 补 @types/node（tsc 全绿）
+- 端到端实测：tsc 零错误 · /md3e-try 前缀静态导出通过 · 本地子路径模拟
+  Playwright 14/14 断言全过（旧文案 0 残留/新三档可用/形变与旋转逐帧动画中/
+  页脚 ZIP 200 且同哈希/控制台零错误）· 三包同源同哈希
 
 ## 还原边界 · 使用须知（第 28 轮 · 用户要求特此说明）
 
@@ -97,7 +128,7 @@
 
 ## 线上预览
 
-**https://ariefenv-hash.github.io/asset-drop/** （gh-pages 分支）
+**https://ariefenv-hash.github.io/md3e-try/** （gh-pages 分支；2026-11-28 随仓库更名迁移，旧地址 https://ariefenv-hash.github.io/asset-drop/ 由 GitHub 自动重定向）
 - 第 28 轮（含第 22-27 轮全部修复）已随本次推送同步上线：开关小球勾叉恢复官方
   16dp 图标盒（修复第 27 轮图标渲染器 inline style 尺寸回归，真机逐像素取证
   定档）、页尾新增「还原边界 · 使用须知」栏，均可在线验证

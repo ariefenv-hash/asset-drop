@@ -2,6 +2,12 @@
  * Direct WebGL2 (GLSL ES 3.00) port of AOSP AGSL shaders:
  * 1) frameworks/base/graphics/java/android/graphics/drawable/RippleShader.java
  * 2) frameworks/base/packages/SystemUI/animation/src/com/android/systemui/surfaceeffects/ripple/RippleShader.kt
+ *    （+ 同目录 ../shaderutil/ShaderUtilLibrary.kt 与 SdfShaderLibrary.kt 的 SHADER_LIB）
+ *
+ * 【Web 端鲁棒性守卫（与源码的偏差，如实标注，第 29 轮全量核对后仍保留）】
+ *  - sdCircle/sdRoundedBox/sdEllipse/softCircle 对 0 尺寸的 max(·, 0.0001) 下限与
+ *    sdEllipse 迭代分母 |denom|>1e-6 兜底：AGSL 未定义除零行为，GLSL ES 3.00 需防
+ *    NaN 传染（progress→0 的首帧会真实触发 0 半径）；其余算式与源码逐字一致。
  */
 
 export const VERTEX_SHADER_GLSL = `#version 300 es
@@ -445,7 +451,7 @@ vec4 main(vec2 p) {
   return mix(waveColor, sparkleColor, sparkleAlpha) * mask;
 }`;
 
-export const AOSP_SESSION_JAVA_SOURCE = `// frameworks/base/graphics/java/android/graphics/drawable/RippleAnimationSession.java
+export const AOSP_SESSION_JAVA_SOURCE = `// frameworks/base/graphics/java/android/graphics/drawable/RippleAnimationSession.java（常量）
 private static final int ENTER_ANIM_DURATION = 450;
 private static final int EXIT_ANIM_DURATION = 375;
 private static final long NOISE_ANIMATION_DURATION = 7000;
@@ -457,10 +463,10 @@ private static final TimeInterpolator LINEAR_INTERPOLATOR = new LinearInterpolat
 // Noise loop:  phase mStartTime -> mStartTime + 32 over 7000ms (LINEAR)
 // Exit phase:  progress 0.5f -> 1.0f over 375ms (LINEAR), startDelay = max(450 - elapsed, 0)
 
-// RippleShader.java uniform mapping:
-// setRadius(radius)       => in_maxRadius = radius * 2.3f
-// setResolution(w, h)     => in_resolutionScale = (1/w, 1/h), in_noiseScale = (2.1/w, 2.1/h)
-// setNoisePhase(phase)    => in_noisePhase = phase * 0.001f, in_turbulencePhase = phase
+// frameworks/base/graphics/java/android/graphics/drawable/RippleShader.java（uniform 映射）：
+// setRadius(radius)       => in_maxRadius = radius * 2.3f (L138-140)
+// setResolution(w, h)     => in_resolutionScale = (1/w, 1/h), in_noiseScale = (2.1/w, 2.1/h) (L194-199)
+// setNoisePhase(phase)    => in_noisePhase = phase * 0.001f, in_turbulencePhase = phase (L157-183)
 //   in_tCircle1 = (1.5*0.5 + phase*0.01*cos(1.5*0.55), 1.5*0.5 + phase*0.01*sin(1.5*0.55))
 //   in_tCircle2 = (1.5*0.2 - phase*0.0066*cos(1.5*0.45), 1.5*0.2 - phase*0.0066*sin(1.5*0.45))
 //   in_tCircle3 = (1.5     - phase*0.0066*cos(1.5*0.35), 1.5     - phase*0.0066*sin(1.5*0.35))
@@ -468,9 +474,9 @@ private static final TimeInterpolator LINEAR_INTERPOLATOR = new LinearInterpolat
 //   in_tRotation2 = (cos(phase * -PI*0.0078125 + 2.0*PI), sin(...))
 //   in_tRotation3 = (cos(phase * PI*0.0078125 + 2.75*PI), sin(...))`;
 
-export const AOSP_SYSTEMUI_AGSL_SOURCE = `// packages/SystemUI/animation/.../surfaceeffects/ripple/RippleShader.kt
-// Interpolator: STANDARD = PathInterpolator(0.2f, 0f, 0f, 1f)
-// FadeParams:
+export const AOSP_SYSTEMUI_AGSL_SOURCE = `// packages/SystemUI/animation/src/com/android/systemui/surfaceeffects/ripple/RippleShader.kt
+// Interpolator: STANDARD = PathInterpolator(0.2f, 0f, 0f, 1f)（L192-193）
+// FadeParams（L54-66 默认值）:
 //   sparkleRingFadeParams = (0.0, 0.1, 0.4, 1.0)
 //   baseRingFadeParams    = (0.0, 0.1, 0.3, 1.0)
 //   centerFillFadeParams  = (0.0, 0.0, 0.0, 0.6)

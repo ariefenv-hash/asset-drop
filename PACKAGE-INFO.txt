@@ -1,8 +1,10 @@
 AOSP 涟漪移植展示 · 打包说明
 ================================================
-构建时间：2026-11-22（第 28 轮）
-基线：AOSP Android 17 (android-17.0.0_r1) · @material/web 2.5.0（pkg/ 原文内联运行）· MDC-Android 1.14.0
-· Monet CoreSpec = packages/SystemUI/monet ColorScheme.kt（aosp-mirror android-13.0.0_r1）
+构建时间：2026-11-28（第 29 轮）
+基线：AOSP main 分支（联网取证，2026-11）· @material/web 2.5.0（pkg/ 原文内联运行）
+· MDC-Android 1.14.0（tag 联网逐值核对）· androidx graphics-shapes（androidx-main）
+· Monet CoreSpec = packages/SystemUI/monet ColorScheme.kt（aosp-mirror android-13.0.0_r1，
+  第 25 轮联网核对；本仓 utils/mcu 为同源 Material Color Utilities 移植）
 
 一、本包内容
 ------------------------------------------------
@@ -11,37 +13,74 @@ AOSP 涟漪移植展示 · 打包说明
                  + 官方对照 iframe
    - public/     official-md-ripple（pkg/ 原文 + vendor/ lit 3.3.2）、字体、页脚内嵌源码包
    - evidence/   MDC-Android 1.14.0 官方 AAR + tokens 取证转储
-   - 根配置      package.json / next.config.ts / tsconfig / postcss / eslint / bun.lock / .gitignore
+   - 根配置      package.json（第 29 轮补 @types/node）/ next.config.ts / tsconfig /
+                 postcss / eslint / bun.lock / .gitignore
 2) aosp-ripple-port-web-dist.zip —— GitHub Pages 静态导出产物
-   NEXT_EXPORT=1 NEXT_BASE_PATH=/asset-drop 生成（out/），解压即站点；
+   NEXT_EXPORT=1 NEXT_BASE_PATH=/md3e-try 生成（out/），解压即站点；
    纯静态、无 node_modules，与 gh-pages 分支同源。
+   （第 29 轮起仓库更名为 md3e-try：ariefenv-hash/md3e-try，站点
+   https://ariefenv-hash.github.io/md3e-try/ ；资源路径前缀随构建变量切换）
 
-二、第 28 轮变更（开关小球勾叉修复 + 页尾还原边界说明）
+二、第 29 轮变更（全量重考据：反推值清零，真实源码位置全落档）
 ------------------------------------------------
-- 图标渲染器尺寸语义修复（用户复核"开关小球勾叉比原系统大一圈"实根因）：
-  icons/index.tsx 的 size 原先经 inline style（width/height: 24px 默认值）
-  写入，内联样式优先级高于 Tailwind 尺寸类——第 27 轮换装后全站 6 处靠
-  类名定尺寸的图标（开关小球勾叉 h-4、页头明暗切换与源码对照复制/成功
-  h-3.5、暗色演示 Sun h-5）实际全被撑成 24px。现改 width/height 属性写入
-  （lucide 同款语义）：类名/样式可正常覆盖，无类名时仍为默认 24dp
-- 字形档位真机取证（960 网格逐字计算 + Android 16 Expressive 系统设置
-  截图逐像素实测）：X 宽/小球直径 = 0.355~0.387 ↔ 官方默认 close 字形
-  @16dp 图标盒 = 8.77/24 = 0.365 吻合；check_small/close_small 小号变体
-  （6.13/24 = 0.256）明显小于实机——小球维持官方默认 check/close 字形，
-  图标盒保持官方 spec 16dp（m3.material.io switch specs：icon size 16dp
-  选中/未选中同值）；lucide 时代遗留 stroke-[2.75/2.5] 笔画类清除
-  （对实心剪影本就无效）
-- icons 模块补录 check_small/close_small（google/material-design-icons
-  symbols/web/<name>/materialsymbolsrounded/<name>_fill1_24px.svg 原样内联，
-  60→62 枚）作为官方小号光学变体备用，取证结论如实记录于模块头注
-- 页尾「关于本项目 · 项目性质说明」三栏扩四栏：新增「还原边界 · 使用须知」
-  （用户要求）——本仓库仅展示从系统源码中可找到、可考据的部分进行还原，
-  实现可能有所取舍，部分细节未能与主代码一一对应（移植到网页不可避免）；
-  使用时请注意这些组件只是基础，后续动画还需进一步补充完善
+用户指令：对 9 个 aosp 引擎文件做一次完整全量查找，凡此前通过其他用法
+反推、或使用近似值的位置，重新找到真实源码并做进去。本轮逐文件联网取证
+结论如下（真实出处 = 文件 + 行号，均已写回源码头注/行内注释）：
+
+A. 核对后确认与真实源码逐位一致（原样保留，头注补真实出处）
+- materialShapes.ts：androidx graphics-shapes（Cubic.kt circularArc L339-368、
+  RoundedPolygon.kt RoundedCorner/calculateMaxBounds L566-580/L181-197、Shapes.kt
+  circle/star L39-58/L136-168、Morph.kt match L215-296、FloatMapping.kt、
+  FeatureMapping.kt featureMapper L28-148、PolygonMeasure.kt segments=3 L321-324；
+  DistanceEpsilon=1e-4/AngleEpsilon=1e-6 = Utils.kt L50-51）
+- materialShapes.ts 七形顶点：MDC-Android 1.14.0 MaterialShapes.java 逐位一致
+  （getSoftBurst L385-390 / getCookie9 L327-337 / getPentagon L259-262 /
+  getPill L217-222 / getSunny L281-290 / getCookie4 L299-304 / getOval L204-213）；
+  形变顺序 = LoadingIndicatorDrawingDelegate.java INDETERMINATE_SHAPES L134-143
+  （SOFT_BURST→COOKIE_9→PENTAGON→PILL→SUNNY→COOKIE_4→OVAL），normalize 目标域
+  RectF(-1,-1,1,1)（本移植等价域 [-1,1]）；动画 = LoadingIndicatorAnimatorDelegate
+  L36 650ms / L39-40 旋转 50°+90° / L41-42 弹簧 k=200 ζ=0.6
+- RippleEngine.ts framework 侧：RippleAnimationSession.java L42-47（450/375/7000/
+  214=32/插值器）、enter 0→0.5 FAST_OUT_SLOW_IN / exit 0.5→1 LINEAR +
+  startDelay=max(450-elapsed,0)、RippleComponent.getTargetRadius = hypot(w/2,h/2)、
+  RippleShader.java setRadius ×2.3（L139）/ setResolution 2.1（L195）/ 湍流圆与旋转
+  全式、RippleDrawable.java MAX_RIPPLES=10（L157）/ DEFAULT_EFFECT_COLOR=0x8dffffff
+  （L159）
+- shaders.ts：framework AGSL（RippleShader.java SHADER_LIB）与 SystemUI AGSL
+  （RippleShader.kt + ShaderUtilLibrary.kt sparkles/distort + SdfShaderLibrary.kt
+  sdCircle/circleRing 0.25/sdRoundedBox/sdEllipse Halley 3 迭代）逐字一致；
+  仅 0 尺寸守卫为 Web 端防 NaN 适配（头注如实标注）
+- edgeStretch.ts：EdgeEffect.java L98-148 全部常量（24.657/0.98/200/8.0/0.016×2/
+  0.33/13/0.01/0.001）+ StretchEffect.cpp INTERPOLATION_STRENGTH_VALUE=0.7（L188）
+  逐位一致
+- spring.ts：StandardMotionTokens.kt L28-29（k=1400, ζ=0.9）/
+  ExpressiveMotionTokens.kt L28-29（k=800, ζ=0.6）/
+  LoadingIndicatorAnimatorDelegate L41-42（k=200, ζ=0.6）
+- monetStyleSpec.ts / dynamicColor.ts：CoreSpec 沿用第 25 轮联网核对结论
+  （ColorScheme.kt L136-186），本轮未发现偏差
+
+B. 反推值修正（本轮实质变更）
+1) SystemUI 涟漪时长：旧版自创 3000ms（命名 "DEFAULT_RIPPLE_EFFECT_DURATION"）
+   与对照 750ms —— AOSP main 分支全仓检索均无此常量，查无源码依据。
+   真实取值表：RippleView.kt L46 duration 默认 = 1750ms（充电涟漪
+   WiredChargingRippleController 未改 duration 即用此值）；媒体触控涟漪
+   MediaControlViewBinder.kt duration = 1500L；解锁涟漪 AuthRippleController.kt
+   L433 RIPPLE_ANIMATION_DURATION = 800ms；RippleAnimationConfig.duration 默认 0
+   由调用方指定。RippleEngine.ts 以 AOSP_RIPPLE_VIEW_DURATION/MEDIA_TOUCH/
+   AUTH 三常量落档，InteractiveLab 时长切换改为真实三档
+2) SystemUI 最大扩散尺寸：旧版自创 max(w,h)×0.725 与 ellipse 固定系数 0.68 ——
+   SystemUI 全仓检索无 0.725/0.68。真实语义 = setMaxSize(maxWidth,maxHeight)
+   由调用方显式传入（RippleSize.update 线性乘 progress）：圆 = 充电涟漪直径
+   max(w,h)×2（WiredChargingRippleController.layoutRipple，终态半径=max(w,h)
+   铺满屏幕）；媒体涟漪 = 视图宽×2；解锁涟漪 = (传感器半径×0.9)×2；
+   ROUNDED_BOX/ELLIPSE main 分支无 AOSP 调用方 → 演示按视图尺寸适配并如实标注
+3) shaders.ts AOSP_SESSION_JAVA_SOURCE 展示块：uniform 映射此前误挂
+   RippleAnimationSession.java 名下，现拆分标注到 RippleShader.java 对应行号
+4) package.json：devDependencies 补 @types/node（tsc --noEmit 全绿所需）
 
 三、运行
 ------------------------------------------------
   bun install && bun run dev          # http://localhost:3000
-  NEXT_EXPORT=1 NEXT_BASE_PATH=/asset-drop bun run build   # 静态导出 out/
-  （注：next.config.ts build 脚本尾部的 cp 步骤仅 standalone 形态需要，
+  NEXT_EXPORT=1 NEXT_BASE_PATH=/md3e-try bunx next build   # 静态导出 out/
+  （注：package.json build 脚本尾部的 cp 步骤仅 standalone 形态需要，
    导出形态出现 cp 报错可忽略——out/ 已生成）

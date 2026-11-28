@@ -37,9 +37,9 @@ export interface RippleSessionConfig {
   hasMask: boolean;
   maskRadius: number; // CSS px
   maskRadii?: [number, number, number, number]; // [TL, TR, BR, BL] CSS px
-  densityScale: number; // AOSP default = 2.1
+  densityScale: number; // AOSP RippleShader.java setResolution: densityScale = 2.1f (L195)
   speedMultiplier: number; // 1.0 = real-time AOSP 450ms/375ms
-  durationMs?: number; // SystemUI 涟漪时长（默认 3000ms = Android 17 DEFAULT_RIPPLE_EFFECT_DURATION）
+  durationMs?: number; // SystemUI 涟漪时长（默认 1750ms = RippleView.kt L46 默认值）
 }
 
 export interface FrameworkUniformSnapshot {
@@ -64,24 +64,43 @@ export interface FrameworkUniformSnapshot {
 }
 
 /**
- * Exact AOSP RippleAnimationSession.java constants
+ * Exact AOSP RippleAnimationSession.java constants (main 分支，2026-11 取证)。
+ * L42-47：ENTER 450 / EXIT 375 / NOISE 7000 / MAX_NOISE_PHASE = 7000/214 = 32；
+ * FAST_OUT_SLOW_IN = PathInterpolator(0.4, 0, 0.2, 1)（L47-48）；LINEAR（L46）。
  */
 export const AOSP_ENTER_ANIM_DURATION = 450;
 export const AOSP_EXIT_ANIM_DURATION = 375;
 export const AOSP_NOISE_ANIMATION_DURATION = 7000;
 export const AOSP_MAX_NOISE_PHASE = Math.floor(AOSP_NOISE_ANIMATION_DURATION / 214); // 32
-export const AOSP_MAX_RIPPLES = 10;
-export const AOSP_RADIUS_MULTIPLIER = 2.3;
-export const AOSP_DENSITY_SCALE = 2.1;
 /**
- * SystemUI 涟漪效果时长。
- * Android 17（android-17.0.0_r1）SystemUI DEFAULT_RIPPLE_EFFECT_DURATION = 3000 ms。
- * 旧版实现误用 750 ms（Android 13/14 时代参数），已按 Android 17 修正；
- * 可通过 RippleSessionConfig.durationMs 覆盖。
+ * SystemUI 涟漪时长真实取值表（AOSP main 分支联网取证，2026-11）：
+ *  - RippleView.kt L46 `var duration: Long = 1750` —— RippleView 默认；充电涟漪
+ *    （WiredChargingRippleController，未显式改 duration）即按 1750ms 播放
+ *  - MediaControlViewBinder.kt L569 `duration = 1500L` —— 媒体触控涟漪
+ *  - AuthRippleController.kt L433 `RIPPLE_ANIMATION_DURATION = 800` —— 解锁涟漪
+ *  - RippleAnimationConfig.duration 默认 0，时长一律由调用方指定（RippleAnimation.kt play()）
+ * 【修正记录】旧版自创 3000ms（命名 "DEFAULT_RIPPLE_EFFECT_DURATION"——AOSP main 分支
+ * 无此常量）与对照旧值 750ms 均查无源码依据，本版以真实取值表取代。
  */
-export const AOSP_SYSTEMUI_DURATION = 3000;
-/** Android 13/14 时代旧值，仅保留作对照展示，非 Android 17 行为。 */
-export const AOSP_SYSTEMUI_DURATION_LEGACY = 750;
+export const AOSP_RIPPLE_VIEW_DURATION = 1750;
+export const AOSP_MEDIA_TOUCH_RIPPLE_DURATION = 1500;
+export const AOSP_AUTH_RIPPLE_DURATION = 800;
+/** @deprecated 旧版自创值（无源码依据），仅为兼容保留；请改用上表真实取值。 */
+export const AOSP_SYSTEMUI_DURATION = AOSP_RIPPLE_VIEW_DURATION;
+/** @deprecated 旧版自创对照值（无源码依据），仅为兼容保留。 */
+export const AOSP_SYSTEMUI_DURATION_LEGACY = AOSP_MEDIA_TOUCH_RIPPLE_DURATION;
+
+export const AOSP_MAX_RIPPLES = 10; // RippleDrawable.java L157 MAX_RIPPLES = 10
+export const AOSP_RADIUS_MULTIPLIER = 2.3; // RippleShader.java setRadius L139: radius * 2.3f
+export const AOSP_DENSITY_SCALE = 2.1; // RippleShader.java setResolution L195: densityScale = 2.1f
+/** framework 涟漪默认闪粒色：RippleDrawable.java L159 DEFAULT_EFFECT_COLOR = 0x8dffffff */
+export const AOSP_SPARKLE_COLOR = 0x8dffffff;
+/** SystemUI 线性进度→uniform 的时长语义取自 RippleView 默认值（1750ms）。 */
+export const AOSP_SYSTEMUI_DURATION_SOURCE = {
+  rippleViewDefaultMs: AOSP_RIPPLE_VIEW_DURATION,
+  mediaTouchMs: AOSP_MEDIA_TOUCH_RIPPLE_DURATION,
+  authUnlockMs: AOSP_AUTH_RIPPLE_DURATION,
+} as const;
 
 const PI_ROTATE_RIGHT = Math.PI * 0.0078125;
 const PI_ROTATE_LEFT = Math.PI * -0.0078125;
@@ -237,7 +256,7 @@ export class RippleSession {
       this.config.mode === 'systemui'
         ? (this.config.maxRadiusOverride && this.config.maxRadiusOverride > 0
             ? this.config.maxRadiusOverride * dpr
-            : Math.max(w, h) * 0.725)
+            : Math.max(w, h)) // 充电涟漪：直径 = max(w,h)×2 → 终态半径 = max(w,h)
         : baseRadius * AOSP_RADIUS_MULTIPLIER;
 
     const isSystemUi = this.config.mode === 'systemui';
@@ -548,20 +567,30 @@ export class WebGL2RippleRenderer {
         const { program, uniforms: u } = this.systemUiProgram;
         gl.useProgram(program);
 
-        // Android 17 SystemUI：最大扩散尺寸由调用方传入视图实际尺寸
-        // （RippleShader setSize / 调用方 maxWidth·maxHeight 语义）。
-        // 旧版自创近似 hypot(w,h) * 1.65 已按源码语义废弃，改为视图最大边。
-        const autoMax = Math.max(w, h);
-        const maxSizeW =
-          cfg.maxRadiusOverride && cfg.maxRadiusOverride > 0
-            ? cfg.maxRadiusOverride * 2.0 * effDpr
-            : autoMax;
-        const maxSizeH =
-          cfg.systemUiShape === 'ellipse'
-            ? maxSizeW * 0.68
-            : cfg.systemUiShape === 'rounded_box'
-              ? maxSizeW * (h / Math.max(w, 1))
-              : maxSizeW;
+        // SystemUI：in_size = progress=1 时的最终尺寸（RippleSize.setMaxSize(maxWidth, maxHeight)
+        // + update() 线性乘 progress），最终尺寸一律由调用方显式传入，库内无换算（联网取证）：
+        //  - CIRCLE：充电涟漪（main 分支最大真实用例）maxDiameter = max(w,h) × 2
+        //    （WiredChargingRippleController.layoutRipple：Integer.max(width, height) * 2f）
+        //    → shader radius = in_size.x × 0.5 → 终态半径 = max(w,h)，铺满屏幕；
+        //    媒体触控涟漪 maxSize = 视图宽×2（MediaControlViewBinder）；解锁涟漪
+        //    maxSize = (传感器半径×0.9)×2（AuthRippleView.radius setter）
+        //  - ROUNDED_BOX / ELLIPSE：main 分支无 AOSP 调用方（仅库内定义），Web 演示按
+        //    视图尺寸适配（终态尺寸 = 视图 w×h），纵横比非源码直传，如实标注
+        // 【修正记录】旧版自创近似 max(w,h)×0.725 与 ellipse 固定系数 0.68 均无源码依据，
+        // 本轮按上述真实语义修正。
+        const shape = cfg.systemUiShape;
+        let maxSizeW: number;
+        let maxSizeH: number;
+        if (cfg.maxRadiusOverride && cfg.maxRadiusOverride > 0) {
+          maxSizeW = cfg.maxRadiusOverride * 2.0 * effDpr;
+          maxSizeH = shape === 'rounded_box' ? maxSizeW * (h / Math.max(w, 1)) : maxSizeW;
+        } else if (shape === 'circle') {
+          maxSizeW = Math.max(w, h) * 2; // 充电涟漪直径
+          maxSizeH = maxSizeW;
+        } else {
+          maxSizeW = w; // BOX / ELLIPSE：视图尺寸（演示适配）
+          maxSizeH = h;
+        }
 
         const curW = maxSizeW * progress;
         const curH = maxSizeH * progress;

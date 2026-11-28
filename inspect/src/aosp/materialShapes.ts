@@ -3,6 +3,30 @@
  * Feature, FeatureMapping, FloatMapping, PolygonMeasure, Morph) and MDC-Android
  * MaterialShapes + LoadingIndicatorDrawingDelegate 7-shape morph sequence.
  *
+ * 【真实源码位置（2026-11 联网逐值复核，第 29 轮）】
+ *  - androidx.graphics.shapes（androidx/androidx 仓库 androidx-main 分支）：
+ *      graphics/graphics-shapes/src/commonMain/kotlin/androidx/graphics/shapes/
+ *        Cubic.kt（circularArc L339-368：k = d·4/3·(√(2(1−cosα)) − √(1−cos²α))/(1−cosα)，
+ *                  cosa>0.999 转直线；DistanceEpsilon=1e-4 / AngleEpsilon=1e-6 见 Utils.kt L50-51）
+ *        RoundedPolygon.kt（RoundedCorner expectedRoundCut L566-580 sinAngle>1e-3；
+ *                  calculateMaxBounds L181-197：锚点+中点最大距离的外接方）
+ *        Shapes.kt（circle L39-58：polygonRadius = radius/cos(π/n)，默认 8 顶点；
+ *                  star L136-168 + starVerticesFromNumVerts L442-460）
+ *        Morph.kt（match L215-296：doubleMapper→cutAndShift→minb 逐段配对）
+ *        FloatMapping.kt（linearMap/DoubleMapper/progressDistance）
+ *        FeatureMapping.kt（featureMapper L28-148：按距离排序贪心配对 + Identity 兜底）
+ *        PolygonMeasure.kt（LengthMeasurer segments=3，L321-324）
+ *  - MDC-Android（material-components/material-components-android 仓库 1.14.0 tag）：
+ *      lib/java/com/google/android/material/shape/MaterialShapes.java
+ *        七形顶点值逐位核对一致：getSoftBurst L385-390 / getCookie9 L327-337 / getPentagon
+ *        L259-262 / getPill L217-222 / getSunny L281-290 / getCookie4 L299-304 / getOval
+ *        L204-213；公开常量统一经 normalize(shape, radial=true)（L594-630）
+ *      lib/java/com/google/android/material/loadingindicator/LoadingIndicatorDrawingDelegate.java
+ *        （INDETERMINATE_SHAPES L134-143：SOFT_BURST→COOKIE_9→PENTAGON→PILL→SUNNY→
+ *        COOKIE_4→OVAL，normalize 目标域 RectF(-1,-1,1,1)；LIDrawDelegate 段内进度 L120-125）
+ *      LoadingIndicatorAnimatorDelegate.java（L36 DURATION=650ms / L39-40 旋转 50°+90° /
+ *        L41-42 弹簧 k=200 ζ=0.6 / L123-141 旋转合成公式）
+ *
  * Fixes the sharp-corner / linear-segment distortion by computing exact circular
  * arc tangent lengths via Cubic.circularArc, feature-matched Morph pairs with
  * LengthMeasurer & DoubleMapper, and rendering true cubic Beziers.
