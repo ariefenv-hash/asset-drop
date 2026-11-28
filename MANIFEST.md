@@ -2,20 +2,62 @@
 
 > 本仓为**资源中转仓**，与 `ariefenv-hash/md3` 完全隔离。md3 本侧已停工。
 > 归档内容**原样保留、未做任何修改**。
+> **第 30 轮（2026-11-28）归档滚动更新**：细节动画三件套（SwipeRefresh 逐值移植 androidx SwipeRefreshLayout+CircularProgressDrawable / SpringLab 转译 androidx object Spring 劲度表 / CheckboxDraw 转译 MDC-Android AVD 三态动画，全部真实源码逐值取证）+ 可变字体多字体多轴化（4 英文 × 5 中文：新增 Roboto Flex 13 轴 / Recursive 5 轴 / Fraunces 4 轴 / MiSans VF / 资源圆体 CN VF 双轴子集内置；GSF opsz 考据修正 6→1–144）。取代第 29 轮归档。
 > **第 29 轮（2026-11-28）归档滚动更新**：9 个 aosp 引擎文件全量重考据——反推值清零（SystemUI 时长 3000/750、最大扩散 0.725/0.68 均查无源码依据，按真实调用方取值表修正），核对一致项补真实文件+行号出处；仓库更名 asset-drop → **md3e-try**（Pages 前缀随构建变量切至 /md3e-try）。取代第 28 轮归档（第 18/21/23/24/25/26/27/28 轮历史数据见本文件后半与 git 历史）。
 > **第 28 轮（2026-11-22）归档滚动更新**：开关小球勾叉字形修复（图标渲染器 inline style 压类名实根因 + 真机逐像素取证定档）+ 页尾新增「还原边界 · 使用须知」。
 > **第 27 轮（2026-11-22）归档滚动更新**：在承接第 22-26 轮基础上，完成全站去 npm 化（运行时依赖收敛到 react/react-dom/next 三个；lucide-react 卸载 → Material Symbols 官方路径数据内联自研图标模块；shadcn/Radix/Prisma 死代码出库）。
 
-## 一、两份原始归档（第 29 轮）
+## 一、两份原始归档（第 30 轮）
 
 | 文件 | 大小 | sha256 |
 |---|---|---|
-| `archives/aosp-ripple-port-web-src.zip` | 7,483,644 B | `d23c1479ee143e1369ef82c6ceb87194bbe37089801e91a453895838659e516c` |
-| `archives/aosp-ripple-port-web-dist.zip` | 11,607,214 B | `6ff7bb9e3ae0a3d0cbcf2b68dbb90c9b7630dc0660648aaeb991d8b0e582f185` |
+| `archives/aosp-ripple-port-web-src.zip` | 12,222,143 B | `eef0842de9a30a1bdcde7fa4a0c223149c12440568758f337b7864f95bfdcb7c` |
+| `archives/aosp-ripple-port-web-dist.zip` | 21,010,838 B | `0b52b27362a1aff4c4e05fa30627b6fa2e65c84ea0818fa97125ba12c5fcb312` |
 
 两份均通过 `zipfile.testzip()` 完整性校验（无损坏条目）；**三包同源同哈希**：dist 内嵌页脚 ZIP（`aosp-ripple-port-src.zip`）= 归档 src zip（字节级一致，本轮复验）。
 
-## 〇、第 29 轮全量重考据（反推值清零）
+## 〇1、第 30 轮扩容（细节动画三件套 + 可变字体多字体多轴，2026-11-28）
+
+### A. 细节动画三件套（真实源码逐值转译，组件头注与页内标注均落真实出处）
+1. **SwipeRefreshDemo**：androidx-main `swiperefreshlayout` 联网取证——
+   SwipeRefreshLayout.java（1454 行）：DRAG_RATE 0.5（L99）/ 触发线 64dp（L114）/
+   圆径 40·56dp（L88/90）/ 起始透明度 76（L95）/ 回收 200ms（L109/111）/
+   MAX_PROGRESS_ANGLE 0.8（L103）；同库 CircularProgressDrawable.java：
+   1332ms 单周期扫掠（L109）/ 组旋转 216°（L112）/ 弧长 0.01-0.8 前后半
+   FastOutSlowIn（L121-126 + applyTransformation L542-564）/ SHRINK@0.5 /
+   CENTER_RADIUS 7.5·11 / STROKE 2.5·3 / ARROW 10×5·12×6 / COLORS={BLACK}。
+   诚实边界：VelocityTracker 抛掷判速未移植、箭头 arrowScale 逐帧微调未复刻。
+   本地浏览器实测：拖拽→64dp 触发→spinner→finishing→列表刷新全链路通。
+2. **SpringLabDemo**：androidx compose `object Spring` 劲度/阻尼预设实验室——
+   常量表 = VectorizedAnimationSpec.kt L835-880（High 10000/Medium 1500/MediumLow
+   400/Low 200/VeryLow 50；HighBouncy 0.2/MediumBouncy 0.5/LowBouncy 0.75/
+   NoBouncy 1；DefaultDisplacementThreshold 0.01），物理方程 = SpringSimulation.kt
+   L62-68（accel = -k·x - c·v，c = 2·√k·ζ）。注意：androidx-main 已无 Spring.kt，
+   object Spring 现居 VectorizedAnimationSpec.kt（JetBrains/androidx 镜像同构核验）。
+3. **CheckboxDrawDemo**：MDC-Android 1.14.0 Checkbox 三态图标动画（AAR 离线解包
+   取证）：勾形/横线/方块路径（values.xml string 原文）；unchecked→checked =
+   scale 0.6→1 @350ms emphasizedDecelerate(0.1,0.7,0.1,1) + trimPathEnd 0→1；
+   checked→unchecked = scale 1→0.6 @150ms emphasizedAccelerate(0.3,0,0.8,0.2) +
+   fillAlpha 1→0 @50ms linear；半选 = pathData 形变 @350ms；时长 token
+   short1=50/short3=150/medium3=350。缓动控制点自 values.xml dimen 逐值提取。
+
+### B. 可变字体多字体多轴（VariableFontPlayground 重构，全部 fvar 实测）
+- 英文 4 枚本地内置（google/fonts ofl 原文件）：GSF 5 轴（opsz 考据修正 6→1–144/def
+  18）、Roboto Flex 13 轴、Recursive 5 轴（64 命名实例）、Fraunces 4 轴
+  （wght def=max=900，官方默认即 Black）
+- 中文 5 枚：文渊圆体/文渊宋体/思源宋体（zeoseven 414/415/285 原方案保留）、
+  MiSans VF（小米官方 VF，jsDelivr npm misans@5.0.0 分片；wght 150-700(def 330)
+  内部刻度如实标注）、资源圆体 CN VF（Resource Han Rounded CN VF v1.910，OFL；
+  **wght 200-900 + ROND 0-100 双轴、33 命名实例**——本站第一枚多轴中文可变字体；
+  65MB CFF2 原件 fontTools 子集化 3913 字形 → 2.4MB woff2 本地内置）
+- 工程改动：layout.tsx +4 组 @font-face（轴范围 fvar 实测）+ MiSans 分片 link；
+  globals.css 混排栈改 var(--vf-en) 前导；游乐场重构为英/中双排选择器 + 动态轴
+  滑块 + wght 交集区间钳位 + 混搭预设 7 条 + 全站应用支持 --vf-en
+- 考据排除记录：霞鹜文楷 v1.530 无 VF（fontsource axes=[] + GitHub release 逐一
+  核实）；OPPO Sans VF 仅存于 ColorOS 系统内；阿里巴巴普惠体 3.0 仅静态字重
+- 取证档案：evidence/round30-evidence.md（6 枚字体 fvar 逐轴 + 动画常量行号）
+
+## 〇2、第 29 轮全量重考据（反推值清零）
 
 **取证通道**：api.github.com contents/raw（MDC-Android 1.14.0 tag、androidx/androidx androidx-main、aosp-mirror/platform_frameworks_base main + blobless sparse clone 本地全仓 grep）；raw.github / googlesource / GitHub code search 通道不可用或不稳定，均如实留档。
 

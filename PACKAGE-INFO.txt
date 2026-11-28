@@ -1,84 +1,95 @@
 AOSP 涟漪移植展示 · 打包说明
 ================================================
-构建时间：2026-11-28（第 29 轮）
+构建时间：2026-11-28（第 30 轮）
 基线：AOSP main 分支（联网取证，2026-11）· @material/web 2.5.0（pkg/ 原文内联运行）
-· MDC-Android 1.14.0（tag 联网逐值核对）· androidx graphics-shapes（androidx-main）
+· MDC-Android 1.14.0（tag 联网逐值核对 + AAR 离线解包）· androidx graphics-shapes
+（androidx-main）· androidx swiperefreshlayout / compose animation-core（androidx-main）
 · Monet CoreSpec = packages/SystemUI/monet ColorScheme.kt（aosp-mirror android-13.0.0_r1，
   第 25 轮联网核对；本仓 utils/mcu 为同源 Material Color Utilities 移植）
 
 一、本包内容
 ------------------------------------------------
 1) aosp-ripple-port-web-src.zip —— Next.js 预览工程源码（可复现构建）
-   - src/        9 个 aosp 引擎文件 + 15 个组件文件（含自研图标模块 icons/）
+   - src/        9 个 aosp 引擎文件 + 18 个组件文件（含自研图标模块 icons/、
+                 第 30 轮新增 SwipeRefreshDemo/SpringLabDemo/CheckboxDrawDemo）
                  + 官方对照 iframe
-   - public/     official-md-ripple（pkg/ 原文 + vendor/ lit 3.3.2）、字体、页脚内嵌源码包
-   - evidence/   MDC-Android 1.14.0 官方 AAR + tokens 取证转储
-   - 根配置      package.json（第 29 轮补 @types/node）/ next.config.ts / tsconfig /
-                 postcss / eslint / bun.lock / .gitignore
+   - public/     official-md-ripple（pkg/ 原文 + vendor/ lit 3.3.2）、字体
+                 （第 30 轮起 6 枚：GoogleSansFlex + roboto-flex + recursive +
+                 fraunces + ResourceHanRoundedCN-VF-Subset）、页脚内嵌源码包
+   - evidence/   MDC-Android 1.14.0 官方 AAR + tokens 取证转储 +
+                 round30-evidence.md（可变字体 fvar 逐轴实测 + 动画真值档案）
+   - 根配置      package.json / next.config.ts / tsconfig / postcss / eslint /
+                 bun.lock / .gitignore
 2) aosp-ripple-port-web-dist.zip —— GitHub Pages 静态导出产物
    NEXT_EXPORT=1 NEXT_BASE_PATH=/md3e-try 生成（out/），解压即站点；
    纯静态、无 node_modules，与 gh-pages 分支同源。
-   （第 29 轮起仓库更名为 md3e-try：ariefenv-hash/md3e-try，站点
+   （仓库 md3e-try：ariefenv-hash/md3e-try，站点
    https://ariefenv-hash.github.io/md3e-try/ ；资源路径前缀随构建变量切换）
 
-二、第 29 轮变更（全量重考据：反推值清零，真实源码位置全落档）
+二、第 30 轮变更（细节动画扩容 + 可变字体多字体多轴化）
 ------------------------------------------------
-用户指令：对 9 个 aosp 引擎文件做一次完整全量查找，凡此前通过其他用法
-反推、或使用近似值的位置，重新找到真实源码并做进去。本轮逐文件联网取证
-结论如下（真实出处 = 文件 + 行号，均已写回源码头注/行内注释）：
+用户指令：①添加更多细节动画丰富完善仓库；②可变字体网络搜索更多选择，
+中文可变字体尽可能找到多轴的并加入。本轮全部落真实源码/真实文件取证：
 
-A. 核对后确认与真实源码逐位一致（原样保留，头注补真实出处）
-- materialShapes.ts：androidx graphics-shapes（Cubic.kt circularArc L339-368、
-  RoundedPolygon.kt RoundedCorner/calculateMaxBounds L566-580/L181-197、Shapes.kt
-  circle/star L39-58/L136-168、Morph.kt match L215-296、FloatMapping.kt、
-  FeatureMapping.kt featureMapper L28-148、PolygonMeasure.kt segments=3 L321-324；
-  DistanceEpsilon=1e-4/AngleEpsilon=1e-6 = Utils.kt L50-51）
-- materialShapes.ts 七形顶点：MDC-Android 1.14.0 MaterialShapes.java 逐位一致
-  （getSoftBurst L385-390 / getCookie9 L327-337 / getPentagon L259-262 /
-  getPill L217-222 / getSunny L281-290 / getCookie4 L299-304 / getOval L204-213）；
-  形变顺序 = LoadingIndicatorDrawingDelegate.java INDETERMINATE_SHAPES L134-143
-  （SOFT_BURST→COOKIE_9→PENTAGON→PILL→SUNNY→COOKIE_4→OVAL），normalize 目标域
-  RectF(-1,-1,1,1)（本移植等价域 [-1,1]）；动画 = LoadingIndicatorAnimatorDelegate
-  L36 650ms / L39-40 旋转 50°+90° / L41-42 弹簧 k=200 ζ=0.6
-- RippleEngine.ts framework 侧：RippleAnimationSession.java L42-47（450/375/7000/
-  214=32/插值器）、enter 0→0.5 FAST_OUT_SLOW_IN / exit 0.5→1 LINEAR +
-  startDelay=max(450-elapsed,0)、RippleComponent.getTargetRadius = hypot(w/2,h/2)、
-  RippleShader.java setRadius ×2.3（L139）/ setResolution 2.1（L195）/ 湍流圆与旋转
-  全式、RippleDrawable.java MAX_RIPPLES=10（L157）/ DEFAULT_EFFECT_COLOR=0x8dffffff
-  （L159）
-- shaders.ts：framework AGSL（RippleShader.java SHADER_LIB）与 SystemUI AGSL
-  （RippleShader.kt + ShaderUtilLibrary.kt sparkles/distort + SdfShaderLibrary.kt
-  sdCircle/circleRing 0.25/sdRoundedBox/sdEllipse Halley 3 迭代）逐字一致；
-  仅 0 尺寸守卫为 Web 端防 NaN 适配（头注如实标注）
-- edgeStretch.ts：EdgeEffect.java L98-148 全部常量（24.657/0.98/200/8.0/0.016×2/
-  0.33/13/0.01/0.001）+ StretchEffect.cpp INTERPOLATION_STRENGTH_VALUE=0.7（L188）
-  逐位一致
-- spring.ts：StandardMotionTokens.kt L28-29（k=1400, ζ=0.9）/
-  ExpressiveMotionTokens.kt L28-29（k=800, ζ=0.6）/
-  LoadingIndicatorAnimatorDelegate L41-42（k=200, ζ=0.6）
-- monetStyleSpec.ts / dynamicColor.ts：CoreSpec 沿用第 25 轮联网核对结论
-  （ColorScheme.kt L136-186），本轮未发现偏差
+A. 可变字体扩展（VariableFontPlayground 多字体多轴化重构）
+- 英文 4 枚（本地内置，google/fonts ofl 原文件，fontTools fvar 逐轴实测）：
+  Google Sans Flex 5 轴（wght 1-1000/opsz 1-144/wdth 25-151/ROND 0-100/slnt -10-0；
+  ※ 考据修正：旧实验室硬编码 opsz 6-144/def 36，实测 1-144/def 18，第 30 轮改正）、
+  Roboto Flex 13 轴（GRAD/XOPQ/YOPQ/XTRA/YTUC/YTLC/YTAS/YTDE/YTFI 等 YT* 全家）、
+  Recursive 5 轴（MONO/CASL/CRSV/slnt/wght，64 命名实例）、Fraunces 4 轴
+  （opsz/SOFT/WONK；wght 100-900 且 def=max=900，官方默认实例即 Black）
+- 中文 5 枚：
+  文渊圆体/文渊宋体/思源宋体（zeoseven fontsapi 414/415/285，第 20 轮原方案保留）、
+  MiSans VF（小米官方 VF；jsDelivr npm misans@5.0.0 分片 CSS；wght 150-700(def 330)
+  为字体内部刻度，Thin=150…Heavy=700，与 web 标准刻度不同——如实标注）、
+  资源圆体 CN VF（Resource Han Rounded CN VF v1.910，OFL，思源黑体衍生；
+  wght 200-900(def 200) + ROND 0-100(def 100) 双轴、33 命名实例——本站第一枚
+  多轴中文可变字体；65MB CFF2 原件经 fontTools 子集化（GB2312 一级 3755 字 +
+  ASCII + 常用标点 = 3913 字形）为 2.4MB woff2 本地内置 public/fonts/）
+- 考据排除记录（如实留档）：霞鹜文楷 v1.530 官方仅 3 静态字重（axes=[]，无 VF）；
+  OPPO Sans 可变字体仅存于 ColorOS 系统内、官网无 VF 下载；阿里巴巴普惠体 3.0
+  仅静态字重家族
+- 工程改动：layout.tsx 新增 4 组 @font-face（轴范围全部 fvar 实测）+ MiSans
+  分片 CSS link；globals.css 混排栈改 var(--vf-en) 前导（新增变量）；
+  VariableFontPlayground 重构为英/中两排选择器 + 动态轴滑块（按选中字体 fvar
+  生成）+ wght 交集区间钳位（中英轴范围交集诚实呈现）+ 混搭预设扩至 7 条 +
+  "应用到全站"支持 --vf-en 持久化；混排机制不变（font-weight 中英联动 wght，
+  专属轴走 font-variation-settings）
 
-B. 反推值修正（本轮实质变更）
-1) SystemUI 涟漪时长：旧版自创 3000ms（命名 "DEFAULT_RIPPLE_EFFECT_DURATION"）
-   与对照 750ms —— AOSP main 分支全仓检索均无此常量，查无源码依据。
-   真实取值表：RippleView.kt L46 duration 默认 = 1750ms（充电涟漪
-   WiredChargingRippleController 未改 duration 即用此值）；媒体触控涟漪
-   MediaControlViewBinder.kt duration = 1500L；解锁涟漪 AuthRippleController.kt
-   L433 RIPPLE_ANIMATION_DURATION = 800ms；RippleAnimationConfig.duration 默认 0
-   由调用方指定。RippleEngine.ts 以 AOSP_RIPPLE_VIEW_DURATION/MEDIA_TOUCH/
-   AUTH 三常量落档，InteractiveLab 时长切换改为真实三档
-2) SystemUI 最大扩散尺寸：旧版自创 max(w,h)×0.725 与 ellipse 固定系数 0.68 ——
-   SystemUI 全仓检索无 0.725/0.68。真实语义 = setMaxSize(maxWidth,maxHeight)
-   由调用方显式传入（RippleSize.update 线性乘 progress）：圆 = 充电涟漪直径
-   max(w,h)×2（WiredChargingRippleController.layoutRipple，终态半径=max(w,h)
-   铺满屏幕）；媒体涟漪 = 视图宽×2；解锁涟漪 = (传感器半径×0.9)×2；
-   ROUNDED_BOX/ELLIPSE main 分支无 AOSP 调用方 → 演示按视图尺寸适配并如实标注
-3) shaders.ts AOSP_SESSION_JAVA_SOURCE 展示块：uniform 映射此前误挂
-   RippleAnimationSession.java 名下，现拆分标注到 RippleShader.java 对应行号
-4) package.json：devDependencies 补 @types/node（tsc --noEmit 全绿所需）
+B. 细节动画三件套（新增组件，全部真实源码转译，出处见各组件头注）
+1) SwipeRefreshDemo —— androidx SwipeRefreshLayout（1454 行）+ CircularProgressDrawable
+   逐值移植：DRAG_RATE 0.5 / 触发线 64dp / 圆径 40·56dp / 回收 200ms /
+   起始透明度 76 / 减速插值器 factor 2；环动画 1332ms 单周期（弧长 0.01-0.8 前后半
+   FastOutSlowIn、环自转 0.21、组旋转 216°/圈、SHRINK@0.5、COLOR_CHANGE@0.75）、
+   CENTER_RADIUS 7.5/11 · STROKE 2.5/3 · ARROW 10×5/12×6 · COLORS={BLACK}；
+   诚实边界：VelocityTracker 抛掷判速未移植（Web 以位移判据等价）、箭头
+   arrowScale 逐帧微调未复刻（保留 0.3 显隐判据）
+2) SpringLabDemo —— androidx compose `object Spring` 劲度/阻尼预设实验室
+   （VectorizedAnimationSpec.kt L835-880：StiffnessHigh 10000 / Medium 1500（spring()
+   默认）/ MediumLow 400（进退场默认）/ Low 200 / VeryLow 50；DampingRatioHighBouncy
+   0.2 / MediumBouncy 0.5（默认）/ LowBouncy 0.75 / NoBouncy 1（默认）；
+   DefaultDisplacementThreshold 0.01）；物理方程 = SpringSimulation.kt L62-68
+   （accel = -k·x - c·v，c = 2·√k·ζ），复用引擎 spring.ts 精确步进；
+   拖拽浮子/轻弹（初速 -1400px/s）观察回弹手感，拖尾点迹可视化过冲振荡
+3) CheckboxDrawDemo —— MDC-Android 1.14.0 Checkbox 三态图标动画（AAR 离线取证）：
+   勾形路径 M14,18.2…20.6,11.6z / 横线 M13.4,15…21,15z（32×32 viewport，
+   values.xml string 原文）；unchecked→checked = scale 0.6→1 @350ms
+   emphasizedDecelerate(0.1,0.7,0.1,1) + trimPathEnd 0→1；checked→unchecked =
+   scale 1→0.6 @150ms emphasizedAccelerate(0.3,0,0.8,0.2) + fillAlpha 1→0 @50ms
+   linear；半选 = pathData 勾↔横线形变 @350ms（Web 端 WAAPI d 插值）；
+   时长 token short1=50/short3=150/medium3=350（AAR values.xml integer）
+- 新增 evidence/round30-evidence.md：6 枚字体 fvar 逐轴档案 + androidx Spring/
+  SwipeRefresh/CPD 常量行号档案 + checkbox AVD 提取记录
 
-三、运行
+三、第 29 轮及更早（全量重考据：反推值清零）
+------------------------------------------------
+9 个 aosp 引擎文件全量重考据——SystemUI 时长 3000/750 → 真实取值表
+（RippleView 1750 / MediaControlViewBinder 1500 / AuthRippleController 800）；
+最大扩散 0.725/0.68 → setMaxSize 调用方真实语义；核对一致项全部落真实文件+行号
+（MDC 1.14.0 tag / androidx-main / AOSP main 联网取证）。完整清单见 MANIFEST.md
+与 git 历史（第 18-29 轮逐轮归档）。
+
+四、运行
 ------------------------------------------------
   bun install && bun run dev          # http://localhost:3000
   NEXT_EXPORT=1 NEXT_BASE_PATH=/md3e-try bunx next build   # 静态导出 out/

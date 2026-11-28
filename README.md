@@ -3,12 +3,49 @@
 独立仓库，与 `ariefenv-hash/md3` 完全隔离；md3 本侧已停工，不再改动任何文件与分支。
 **2026-11-28 起仓库更名：`ariefenv-hash/asset-drop` → `ariefenv-hash/md3e-try`**（GitHub 自动重定向旧地址；Pages 站点迁至 https://ariefenv-hash.github.io/md3e-try/ ，dist 已按 `/md3e-try` 前缀重新构建）。
 
-## 已归档（第 29 轮 · 2026-11-28 滚动更新）
+## 已归档（第 30 轮 · 2026-11-28 滚动更新）
 
-- `archives/aosp-ripple-port-web-src.zip` — AOSP 涟漪移植展示 **第 29 轮** Next.js 工程源码
+- `archives/aosp-ripple-port-web-src.zip` — AOSP 涟漪移植展示 **第 30 轮** Next.js 工程源码（细节动画三件套 + 可变字体多字体多轴）
 - `archives/aosp-ripple-port-web-dist.zip` — 对应 **GitHub Pages 静态导出产物**（`NEXT_EXPORT=1 NEXT_BASE_PATH=/md3e-try`，资源路径含 `/md3e-try` 前缀，解压即站点）
 
 完整清单、sha256、dist 形态变化说明与逐条考据结论见 **MANIFEST.md**。
+
+## 第 30 轮要点（细节动画扩容 + 可变字体多字体多轴，全部真实源码/真实文件取证）
+
+用户指令：①添加更多细节动画丰富完善仓库；②可变字体网络搜索更多选择，
+中文可变字体尽可能找到多轴的并加入。本轮落地：
+
+- **细节动画三件套（新增组件，全部真实源码逐值转译，出处见组件头注）**：
+  1. SwipeRefreshDemo —— androidx-main SwipeRefreshLayout（DRAG_RATE 0.5 /
+     触发线 64dp / 圆径 40·56dp / 回收 200ms / 起始透明度 76）+ CircularProgressDrawable
+     （1332ms 扫掠 / 216° 组旋转 / 弧长 0.01-0.8 前后半 FastOutSlowIn / SHRINK@0.5 /
+     CENTER_RADIUS 7.5·11 / STROKE 2.5·3 / ARROW 10×5·12×6 / COLORS={BLACK}），
+     拖拽→触发→spinner→finishing→列表刷新全链路实测通
+  2. SpringLabDemo —— androidx compose `object Spring` 劲度/阻尼预设实验室
+     （VectorizedAnimationSpec.kt L835-880：10000/1500/400/200/50；0.2/0.5/0.75/1；
+     阈值 0.01）+ SpringSimulation.kt L62-68 物理方程；androidx-main 已无 Spring.kt，
+     object Spring 现居 VectorizedAnimationSpec.kt（JetBrains 镜像同构核验）
+  3. CheckboxDrawDemo —— MDC-Android 1.14.0 Checkbox 三态图标动画（AAR 离线取证：
+     勾/横线/方块路径原文；scale 0.6↔1 @350ms/150ms emphasized 双向缓动 +
+     trimPathEnd/fillAlpha @350ms/50ms；半选 pathData 形变 @350ms）
+- **可变字体多字体多轴（VariableFontPlayground 重构，全部 fvar 实测）**：
+  英文 4 枚本地内置（GSF 5 轴〔opsz 考据修正 6→1–144/def 18〕· Roboto Flex 13 轴 ·
+  Recursive 5 轴 64 实例 · Fraunces 4 轴〔wght def=max=900，官方默认即 Black〕）；
+  中文 5 枚（文渊圆体/文渊宋体/思源宋体〔zeoseven 414/415/285 保留〕· MiSans VF
+  〔小米官方 VF，jsDelivr 分片，wght 150-700 内部刻度如实标注〕· **资源圆体 CN VF**
+  〔wght 200-900 + ROND 0-100 双轴 33 实例——本站第一枚多轴中文可变字体；
+  65MB CFF2 原件 fontTools 子集化 3913 字形 → 2.4MB woff2 本地内置〕）；
+  工程改动 = +4 组 @font-face / 混排栈 var(--vf-en) 前导 / 动态轴滑块 /
+  wght 交集钳位 / 混搭预设 7 条 / 全站应用支持 --vf-en
+- **考据排除记录（如实留档）**：霞鹜文楷 v1.530 无 VF（fontsource axes=[] +
+  GitHub release 资产逐一核实）；OPPO Sans VF 仅存于 ColorOS 系统内；
+  阿里巴巴普惠体 3.0 仅静态字重家族；MiSans VF 内部 usWeightClass 为非标刻度
+- 取证档案：`src-ws/evidence/round30-evidence.md`（6 枚字体 fvar 逐轴实测 +
+  androidx/MDC 动画常量行号档案）
+- 端到端实测：tsc 零错误 · /md3e-try 前缀静态导出通过 · 本地浏览器实测——
+  新三组件全链路可交互（下拉刷新触发/spinner/finishing/列表刷新；弹簧预设切换与
+  轻弹动画；勾选 draw-on 动画 dashoffset 逐帧逼近 0）· 字体按需加载三通道实测
+  （本地子集/本地 TTF/jsDelivr 分片全通）· 控制台零错误 · 三 zip 同源同哈希
 
 ## 第 29 轮要点（全量重考据：反推值清零，真实源码位置全落档）
 
@@ -129,7 +166,7 @@ main + blobless sparse clone 全仓 grep），结论：
 ## 线上预览
 
 **https://ariefenv-hash.github.io/md3e-try/** （gh-pages 分支；2026-11-28 随仓库更名迁移。注：github.com 仓库地址 https://github.com/ariefenv-hash/asset-drop 由 GitHub 自动重定向，但 Pages 子路径 /asset-drop/ 不重定向、直接 404——站点请改用 md3e-try 新地址）
-- 第 28 轮（含第 22-27 轮全部修复）已随本次推送同步上线：开关小球勾叉恢复官方
-  16dp 图标盒（修复第 27 轮图标渲染器 inline style 尺寸回归，真机逐像素取证
-  定档）、页尾新增「还原边界 · 使用须知」栏，均可在线验证
-- 第 26 轮（含第 22-25 轮全部修复）已随本次推送同步上线：全站栅格化口径统一（缩放/捏合不发虚）、开关状态层恒居中，均可在线验证
+- 第 30 轮已随本次推送同步上线：细节动画三件套（下拉刷新/弹簧实验室/checkbox
+  三态）与可变字体实验室 4 英文 × 5 中文多字体多轴（含资源圆体双轴），均可在线验证
+- 第 28-29 轮（含全部修复）同线在线：反推值清零（涟漪时长三档真实值）、开关小球
+  字形、页尾还原边界说明
